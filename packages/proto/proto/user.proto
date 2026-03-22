@@ -1,0 +1,200 @@
+syntax = "proto3";
+
+package aluf.user.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+service UserService {
+  rpc GetUser(GetUserRequest) returns (UserResponse);
+  rpc GetUserByUsername(GetUserByUsernameRequest) returns (UserResponse);
+  rpc GetUsersByIds(GetUsersByIdsRequest) returns (GetUsersByIdsResponse);
+  rpc UpdateProfile(UpdateProfileRequest) returns (UserResponse);
+  rpc SearchUsers(SearchUsersRequest) returns (SearchUsersResponse);
+  rpc GetContacts(GetContactsRequest) returns (GetContactsResponse);
+  rpc AddContact(AddContactRequest) returns (ContactResponse);
+  rpc UpdateContact(UpdateContactRequest) returns (ContactResponse);
+  rpc RemoveContact(RemoveContactRequest) returns (Empty);
+  rpc BlockUser(BlockUserRequest) returns (Empty);
+  rpc UnblockUser(UnblockUserRequest) returns (Empty);
+  rpc UpdatePrivacy(UpdatePrivacyRequest) returns (Empty);
+  rpc GetPrivacy(GetPrivacyRequest) returns (PrivacySettings);
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+  rpc GetAdminStats(GetAdminStatsRequest) returns (GetAdminStatsResponse);
+  rpc AdminUpdateUser(AdminUpdateUserRequest) returns (UserResponse);
+}
+
+message Empty {}
+
+message GetUserRequest {
+  string user_id = 1;
+  /** Если задан — подставить custom_name из контактов viewer → user (как в Telegram) */
+  optional string viewer_user_id = 2;
+}
+
+message GetUserByUsernameRequest {
+  string username = 1;
+}
+
+message GetUsersByIdsRequest {
+  repeated string user_ids = 1;
+}
+
+message GetUsersByIdsResponse {
+  repeated UserResponse users = 1;
+}
+
+message BotCommandRef {
+  string command = 1;
+  string description = 2;
+}
+
+message UserResponse {
+  string id = 1;
+  string aluf_id = 2;
+  string username = 3;
+  string display_name = 4;
+  string phone = 5;
+  string email = 6;
+  string avatar_url = 7;
+  string cover_url = 8;
+  string bio = 9;
+  string status_text = 10;
+  string status_emoji = 11;
+  bool is_premium = 12;
+  string premium_badge_emoji = 18;  // кастомный эмодзи бейджа (только для Premium)
+  bool is_online = 13;
+  google.protobuf.Timestamp last_seen_at = 14;
+  google.protobuf.Timestamp created_at = 15;
+  bool is_bot = 16;
+  repeated BotCommandRef bot_commands = 17;
+  bool is_verified = 19;
+  bool is_official = 20;
+  /** Есть ли viewer в контактах у этого пользователя (для карточки профиля). */
+  optional bool is_contact = 21;
+  /** Только для своего профиля (настройки безопасности); для чужих не заполняется / false. */
+  optional bool is_two_factor_enabled = 22;
+}
+
+message UpdateProfileRequest {
+  string user_id = 1;
+  optional string display_name = 2;
+  optional string username = 3;
+  optional string bio = 4;
+  optional string avatar_url = 5;
+  optional string cover_url = 6;
+  optional string status_text = 7;
+  optional string status_emoji = 8;
+  optional string premium_badge_emoji = 9;  // только для Premium
+}
+
+message SearchUsersRequest {
+  string query = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+  string requester_id = 4;
+}
+
+message SearchUsersResponse {
+  repeated UserResponse users = 1;
+  int32 total_count = 2;
+}
+
+message ListUsersRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+  string search = 3;
+}
+
+message ListUsersResponse {
+  repeated UserResponse users = 1;
+  int32 total_count = 2;
+}
+
+message GetAdminStatsRequest {}
+
+message GetAdminStatsResponse {
+  int32 total_users = 1;
+  int32 new_users_24h = 2;
+}
+
+message AdminUpdateUserRequest {
+  string user_id = 1;
+  optional bool is_verified = 2;
+  optional bool is_official = 3;
+  optional bool is_premium = 4;
+  optional bool is_bot = 5;
+}
+
+message GetContactsRequest {
+  string user_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetContactsResponse {
+  repeated ContactResponse contacts = 1;
+  int32 total_count = 2;
+}
+
+message AddContactRequest {
+  string user_id = 1;
+  string contact_user_id = 2;
+  string nickname = 3;
+}
+
+message UpdateContactRequest {
+  string user_id = 1;
+  string contact_user_id = 2;
+  string nickname = 3;
+}
+
+message RemoveContactRequest {
+  string user_id = 1;
+  string contact_user_id = 2;
+}
+
+message ContactResponse {
+  string user_id = 1;
+  string contact_user_id = 2;
+  string nickname = 3;
+  UserResponse user = 4;
+  google.protobuf.Timestamp added_at = 5;
+  bool is_blocked = 6;
+}
+
+message BlockUserRequest {
+  string user_id = 1;
+  string blocked_user_id = 2;
+}
+
+message UnblockUserRequest {
+  string user_id = 1;
+  string blocked_user_id = 2;
+}
+
+message UpdatePrivacyRequest {
+  string user_id = 1;
+  PrivacySettings settings = 2;
+}
+
+message GetPrivacyRequest {
+  string user_id = 1;
+}
+
+enum PrivacyLevel {
+  PRIVACY_LEVEL_UNSPECIFIED = 0;
+  PRIVACY_LEVEL_EVERYONE = 1;
+  PRIVACY_LEVEL_CONTACTS = 2;
+  PRIVACY_LEVEL_NOBODY = 3;
+}
+
+message PrivacySettings {
+  PrivacyLevel last_seen = 1;
+  PrivacyLevel profile_photo = 2;
+  PrivacyLevel about = 3;
+  PrivacyLevel groups = 4;
+  PrivacyLevel calls = 5;
+  PrivacyLevel forwarded_messages = 6;
+  bool read_receipts = 7;
+}

@@ -1,0 +1,30 @@
+export declare const AUTH_PROTO_PATH: string;
+export declare const USER_PROTO_PATH: string;
+export declare const CHAT_PROTO_PATH: string;
+export declare const MESSAGE_PROTO_PATH: string;
+export declare const MEDIA_PROTO_PATH: string;
+export declare const NOTIFICATION_PROTO_PATH: string;
+export declare const CALL_PROTO_PATH: string;
+export declare const SEARCH_PROTO_PATH: string;
+export declare const STORY_PROTO_PATH: string;
+export declare const BOT_PROTO_PATH: string;
+export declare const STICKER_PROTO_PATH: string;
+export declare const CUSTOM_EMOJI_PROTO_PATH: string;
+export declare const MUSIC_PROTO_PATH: string;
+export declare const GRPC_PACKAGES: {
+    readonly AUTH: "aluf.auth.v1";
+    readonly USER: "aluf.user.v1";
+    readonly CHAT: "aluf.chat.v1";
+    readonly MESSAGE: "aluf.message.v1";
+    readonly MEDIA: "aluf.media.v1";
+    readonly NOTIFICATION: "aluf.notification.v1";
+    readonly CALL: "aluf.call.v1";
+    readonly SEARCH: "aluf.search.v1";
+    readonly STORY: "aluf.story.v1";
+    readonly BOT: "aluf.bot.v1";
+    readonly STICKER: "aluf.sticker.v1";
+    readonly CUSTOM_EMOJI: "aluf.custom_emoji.v1";
+    readonly MUSIC: "aluf.music.v1";
+};
+export type GrpcServiceKey = keyof typeof GRPC_PACKAGES;
+//# sourceMappingURL=proto-paths.d.ts.map

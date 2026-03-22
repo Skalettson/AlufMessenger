@@ -1,0 +1,142 @@
+syntax = "proto3";
+
+package aluf.story.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+// Логика как в Telegram: лента по группам пользователей, просмотры, реакции, приватность, TTL.
+
+service StoryService {
+  // Публикация истории (фото/видео как медиа; текст — рендер в картинку и media_id).
+  rpc CreateStory(CreateStoryRequest) returns (StoryResponse);
+  // Лента: группы контактов с историями, флаг «есть непросмотренные», время последней.
+  rpc GetStories(GetStoriesRequest) returns (GetStoriesResponse);
+  // Истории одного пользователя (для просмотра по клику на круг).
+  rpc GetUserStories(GetUserStoriesRequest) returns (GetUserStoriesResponse);
+  // Отметить просмотр (идемпотентно, счётчик по факту уникальных просмотров).
+  rpc ViewStory(ViewStoryRequest) returns (Empty);
+  // Список просмотров своей истории (кто смотрел, когда, реакция).
+  rpc GetStoryViewsList(GetStoryViewsListRequest) returns (GetStoryViewsListResponse);
+  // Реакция эмодзи на историю.
+  rpc ReactToStory(ReactToStoryRequest) returns (Empty);
+  // Владелец истории (для ответа в личный чат).
+  rpc GetStoryOwner(GetStoryOwnerRequest) returns (GetStoryOwnerResponse);
+  // Удалить свою историю.
+  rpc DeleteStory(DeleteStoryRequest) returns (Empty);
+}
+
+message Empty {}
+
+enum StoryPrivacy {
+  STORY_PRIVACY_UNSPECIFIED = 0;
+  STORY_PRIVACY_EVERYONE = 1;
+  STORY_PRIVACY_CONTACTS = 2;
+  STORY_PRIVACY_SELECTED = 3;
+  STORY_PRIVACY_EXCEPT = 4;
+}
+
+message CreateStoryRequest {
+  string user_id = 1;
+  string media_id = 2;
+  string caption = 3;
+  StoryPrivacy privacy = 4;
+  repeated string allowed_user_ids = 5;
+  repeated string excluded_user_ids = 6;
+  int32 ttl_hours = 7;
+}
+
+message GetStoriesRequest {
+  string user_id = 1;
+}
+
+message GetStoriesResponse {
+  repeated UserStoryGroup story_groups = 1;
+}
+
+message UserStoryGroup {
+  string user_id = 1;
+  string username = 2;
+  string display_name = 3;
+  string avatar_url = 4;
+  repeated StoryResponse stories = 5;
+  bool has_unseen = 6;
+  google.protobuf.Timestamp latest_story_at = 7;
+}
+
+message GetUserStoriesRequest {
+  string target_user_id = 1;
+  string viewer_id = 2;
+}
+
+message GetUserStoriesResponse {
+  string user_id = 1;
+  string username = 2;
+  string display_name = 3;
+  string avatar_url = 4;
+  repeated StoryResponse stories = 5;
+  bool has_unseen = 6;
+  google.protobuf.Timestamp latest_story_at = 7;
+}
+
+message ViewStoryRequest {
+  string story_id = 1;
+  string viewer_id = 2;
+}
+
+message GetStoryViewsListRequest {
+  string story_id = 1;
+  string owner_id = 2;
+}
+
+message GetStoryViewsListResponse {
+  repeated StoryViewItem viewers = 1;
+}
+
+message StoryViewItem {
+  string user_id = 1;
+  string username = 2;
+  string display_name = 3;
+  string avatar_url = 4;
+  google.protobuf.Timestamp viewed_at = 5;
+  string reaction_emoji = 6;
+}
+
+message ReactToStoryRequest {
+  string story_id = 1;
+  string user_id = 2;
+  string emoji = 3;
+}
+
+message GetStoryOwnerRequest {
+  string story_id = 1;
+}
+
+message GetStoryOwnerResponse {
+  string owner_user_id = 1;
+  /** Превью для ответа в чате (как в Telegram) */
+  string media_id = 2;
+  string caption = 3;
+  string owner_display_name = 4;
+}
+
+message DeleteStoryRequest {
+  string story_id = 1;
+  string user_id = 2;
+}
+
+message StoryResponse {
+  string id = 1;
+  string user_id = 2;
+  string media_id = 3;
+  string media_url = 4;
+  string caption = 5;
+  StoryPrivacy privacy = 6;
+  repeated string allowed_user_ids = 7;
+  repeated string excluded_user_ids = 8;
+  int32 view_count = 9;
+  int32 reaction_count = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp expires_at = 12;
+  bool viewed = 13;
+}

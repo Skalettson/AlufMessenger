@@ -1,0 +1,25 @@
+{
+  "name": "@aluf/e2e-tests",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:auth": "vitest run auth/",
+    "test:users": "vitest run users/",
+    "test:chats": "vitest run chats/",
+    "test:messages": "vitest run messages/",
+    "test:media": "vitest run media/",
+    "test:calls": "vitest run calls/",
+    "test:stories": "vitest run stories/",
+    "test:search": "vitest run search/",
+    "test:bots": "vitest run bots/"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

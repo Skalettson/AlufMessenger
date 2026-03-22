@@ -1,0 +1,76 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1773088808367,
+      "tag": "0000_add_chat_members_is_pinned",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1773093107358,
+      "tag": "0001_broken_miracleman",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773107998575,
+      "tag": "0002_foamy_tempest",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1773160355810,
+      "tag": "0003_whole_spirit",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1773166288042,
+      "tag": "0004_right_greymalkin",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1773786284739,
+      "tag": "0005_harsh_morlocks",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1774000000000,
+      "tag": "0008_user_music_library",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1774100000000,
+      "tag": "0009_user_music_is_public",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1774200000000,
+      "tag": "0010_mini_apps_and_ma_analytics",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1774300000000,
+      "tag": "0011_ma_payment_invoices",
+      "breakpoints": true
+    }
+  ]
+}

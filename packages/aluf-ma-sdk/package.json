@@ -1,0 +1,48 @@
+{
+  "name": "@aluf/ma-sdk",
+  "version": "1.0.0",
+  "description": "SDK для разработки Mini-Apps в платформе Aluf Messenger",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./react": {
+      "import": "./dist/react/index.js",
+      "types": "./dist/react/index.d.ts"
+    },
+    "./bot": {
+      "import": "./dist/bot/index.js",
+      "types": "./dist/bot/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src/**/*.ts",
+    "test": "vitest run",
+    "clean": "rimraf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@aluf/ma-core": "workspace:*",
+    "@aluf/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.0.0",
+    "rimraf": "^6.0.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  }
+}

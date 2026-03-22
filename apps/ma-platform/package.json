@@ -1,0 +1,47 @@
+{
+  "name": "@aluf/ma-platform",
+  "version": "1.0.0",
+  "description": "Платформа Aluf Mini-Apps - серверная часть с API и WebSocket",
+  "type": "module",
+  "scripts": {
+    "build": "nest build",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:prod": "node dist/main",
+    "lint": "eslint src/**/*.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push"
+  },
+  "dependencies": {
+    "@aluf/ma-core": "workspace:*",
+    "@aluf/shared": "workspace:*",
+    "@aluf/db": "workspace:*",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/platform-ws": "^11.0.0",
+    "@nestjs/websockets": "^11.0.0",
+    "@nestjs/jwt": "^11.0.0",
+    "@nestjs/config": "^4.0.0",
+    "ws": "^8.18.0",
+    "rxjs": "^7.8.0",
+    "reflect-metadata": "^0.2.0",
+    "zod": "^3.24.0",
+    "drizzle-orm": "0.38.4",
+    "postgres": "^3.4.0",
+    "ioredis": "^5.4.0",
+    "uuid": "^11.0.0"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.0",
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.5.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.0.0",
+    "@vitest/coverage-v8": "^2.0.0"
+  }
+}

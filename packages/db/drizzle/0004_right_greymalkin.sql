@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "premium_badge_emoji" varchar(16);

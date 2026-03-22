@@ -1,0 +1,102 @@
+syntax = "proto3";
+
+package aluf.media.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+service MediaService {
+  rpc InitUpload(InitUploadRequest) returns (InitUploadResponse);
+  rpc CompleteUpload(CompleteUploadRequest) returns (MediaFileResponse);
+  rpc GetFile(GetFileRequest) returns (MediaFileResponse);
+  rpc GetFileUrl(GetFileUrlRequest) returns (GetFileUrlResponse);
+  rpc GetFileUrlByStorageKey(GetFileUrlByStorageKeyRequest) returns (GetFileUrlResponse);
+  rpc DeleteFile(DeleteFileRequest) returns (Empty);
+}
+
+message Empty {}
+
+enum MediaType {
+  MEDIA_TYPE_UNSPECIFIED = 0;
+  MEDIA_TYPE_IMAGE = 1;
+  MEDIA_TYPE_VIDEO = 2;
+  MEDIA_TYPE_AUDIO = 3;
+  MEDIA_TYPE_DOCUMENT = 4;
+  MEDIA_TYPE_VOICE = 5;
+  MEDIA_TYPE_STICKER = 6;
+  MEDIA_TYPE_GIF = 7;
+}
+
+message InitUploadRequest {
+  string uploader_id = 1;
+  string file_name = 2;
+  string mime_type = 3;
+  int64 file_size = 4;
+  MediaType media_type = 5;
+  google.protobuf.Struct metadata = 6;
+}
+
+message InitUploadResponse {
+  string upload_id = 1;
+  string upload_url = 2;
+  map<string, string> upload_headers = 3;
+  google.protobuf.Timestamp expires_at = 4;
+}
+
+message CompleteUploadRequest {
+  string upload_id = 1;
+  string uploader_id = 2;
+  string etag = 3;
+}
+
+message GetFileRequest {
+  string file_id = 1;
+}
+
+message GetFileUrlRequest {
+  string file_id = 1;
+  string variant = 2;
+  int32 expires_in_seconds = 3;
+}
+
+message GetFileUrlByStorageKeyRequest {
+  string storage_key = 1;
+  int32 expires_in_seconds = 2;
+}
+
+message GetFileUrlResponse {
+  string url = 1;
+  google.protobuf.Timestamp expires_at = 2;
+}
+
+message DeleteFileRequest {
+  string file_id = 1;
+  string deleter_id = 2;
+}
+
+message MediaVariant {
+  string variant = 1;
+  string url = 2;
+  int32 width = 3;
+  int32 height = 4;
+  int64 file_size = 5;
+}
+
+message MediaFileResponse {
+  string id = 1;
+  string uploader_id = 2;
+  string file_name = 3;
+  string mime_type = 4;
+  int64 file_size = 5;
+  MediaType media_type = 6;
+  string url = 7;
+  string thumbnail_url = 8;
+  int32 width = 9;
+  int32 height = 10;
+  int32 duration_seconds = 11;
+  repeated MediaVariant variants = 12;
+  google.protobuf.Struct metadata = 13;
+  google.protobuf.Timestamp created_at = 14;
+  string storage_key = 15;
+  string thumbnail_storage_key = 16;
+}

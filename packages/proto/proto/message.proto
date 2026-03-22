@@ -1,0 +1,164 @@
+syntax = "proto3";
+
+package aluf.message.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+service MessageService {
+  rpc SendMessage(SendMessageRequest) returns (MessageResponse);
+  rpc GetMessages(GetMessagesRequest) returns (GetMessagesResponse);
+  rpc GetMessage(GetMessageRequest) returns (MessageResponse);
+  rpc EditMessage(EditMessageRequest) returns (MessageResponse);
+  rpc DeleteMessage(DeleteMessageRequest) returns (Empty);
+  rpc PinMessage(PinMessageRequest) returns (Empty);
+  rpc UnpinMessage(UnpinMessageRequest) returns (Empty);
+  rpc GetPinnedMessages(GetPinnedMessagesRequest) returns (GetMessagesResponse);
+  rpc ReactToMessage(ReactToMessageRequest) returns (Empty);
+  rpc ForwardMessage(ForwardMessageRequest) returns (MessageResponse);
+  rpc ClearChatMessages(ClearChatMessagesRequest) returns (Empty);
+  rpc ClearChatMessagesAdmin(ClearChatMessagesAdminRequest) returns (Empty);
+}
+
+message ClearChatMessagesRequest {
+  string chat_id = 1;
+  string user_id = 2;
+}
+
+message ClearChatMessagesAdminRequest {
+  string chat_id = 1;
+}
+
+message Empty {}
+
+enum ContentType {
+  CONTENT_TYPE_UNSPECIFIED = 0;
+  CONTENT_TYPE_TEXT = 1;
+  CONTENT_TYPE_IMAGE = 2;
+  CONTENT_TYPE_VIDEO = 3;
+  CONTENT_TYPE_AUDIO = 4;
+  CONTENT_TYPE_FILE = 5;
+  CONTENT_TYPE_VOICE = 6;
+  CONTENT_TYPE_STICKER = 7;
+  CONTENT_TYPE_GIF = 8;
+  CONTENT_TYPE_LOCATION = 9;
+  CONTENT_TYPE_CONTACT = 10;
+  CONTENT_TYPE_POLL = 11;
+  CONTENT_TYPE_SYSTEM = 12;
+  CONTENT_TYPE_VIDEO_NOTE = 13;
+}
+
+enum MessageDirection {
+  MESSAGE_DIRECTION_UNSPECIFIED = 0;
+  MESSAGE_DIRECTION_BEFORE = 1;
+  MESSAGE_DIRECTION_AFTER = 2;
+  MESSAGE_DIRECTION_AROUND = 3;
+}
+
+message SendMessageRequest {
+  string chat_id = 1;
+  string sender_id = 2;
+  ContentType content_type = 3;
+  string text_content = 4;
+  string media_id = 5;
+  string reply_to_id = 6;
+  google.protobuf.Struct metadata = 7;
+  int32 self_destruct_seconds = 8;
+}
+
+message GetMessagesRequest {
+  string chat_id = 1;
+  string cursor = 2;
+  int32 limit = 3;
+  MessageDirection direction = 4;
+}
+
+message GetMessagesResponse {
+  repeated MessageResponse messages = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message GetMessageRequest {
+  string message_id = 1;
+  string chat_id = 2;
+}
+
+message EditMessageRequest {
+  string message_id = 1;
+  string chat_id = 2;
+  string editor_id = 3;
+  string text_content = 4;
+  google.protobuf.Struct metadata = 5;
+}
+
+message DeleteMessageRequest {
+  string message_id = 1;
+  string chat_id = 2;
+  string deleter_id = 3;
+  bool delete_for_everyone = 4;
+}
+
+message PinMessageRequest {
+  string message_id = 1;
+  string chat_id = 2;
+  string pinned_by = 3;
+}
+
+message UnpinMessageRequest {
+  string message_id = 1;
+  string chat_id = 2;
+  string unpinned_by = 3;
+}
+
+message GetPinnedMessagesRequest {
+  string chat_id = 1;
+}
+
+message ReactToMessageRequest {
+  string message_id = 1;
+  string chat_id = 2;
+  string user_id = 3;
+  string emoji = 4;
+}
+
+message ForwardMessageRequest {
+  string message_id = 1;
+  string from_chat_id = 2;
+  string to_chat_id = 3;
+  string sender_id = 4;
+}
+
+message Reaction {
+  string emoji = 1;
+  repeated string user_ids = 2;
+  int32 count = 3;
+}
+
+message MessageResponse {
+  string id = 1;
+  string chat_id = 2;
+  string sender_id = 3;
+  string sender_display_name = 19;
+  string sender_avatar_url = 20;
+  ContentType content_type = 4;
+  string text_content = 5;
+  string media_id = 6;
+  string media_url = 7;
+  string reply_to_id = 8;
+  string forwarded_from_id = 9;
+  string forwarded_from_chat_id = 10;
+  repeated Reaction reactions = 11;
+  bool is_pinned = 12;
+  bool is_edited = 13;
+  int32 self_destruct_seconds = 14;
+  google.protobuf.Struct metadata = 15;
+  google.protobuf.Timestamp created_at = 16;
+  google.protobuf.Timestamp updated_at = 17;
+  google.protobuf.Timestamp deleted_at = 18;
+  bool sender_is_premium = 21;
+  /** Кастомный эмодзи бейджа Premium у отправителя (виден всем) */
+  string sender_premium_badge_emoji = 22;
+  bool sender_is_verified = 23;
+  bool sender_is_official = 24;
+}

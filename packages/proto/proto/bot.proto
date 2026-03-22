@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package aluf.bot.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+service BotService {
+  rpc CreateBot(CreateBotRequest) returns (CreateBotResponse);
+  rpc ListBots(ListBotsRequest) returns (ListBotsResponse);
+  rpc GetBot(GetBotRequest) returns (BotInfo);
+  rpc UpdateBot(UpdateBotRequest) returns (BotInfo);
+  rpc DeleteBot(DeleteBotRequest) returns (Empty);
+  rpc RegenerateToken(RegenerateTokenRequest) returns (RegenerateTokenResponse);
+}
+
+message Empty {}
+
+message CreateBotRequest {
+  string owner_id = 1;
+  string username = 2;
+  string display_name = 3;
+  optional string description = 4;
+  optional string avatar_url = 5;
+}
+
+message CreateBotResponse {
+  string id = 1;
+  string username = 2;
+  string display_name = 3;
+  string token = 4;
+}
+
+message ListBotsRequest {
+  string owner_id = 1;
+}
+
+message BotCommand {
+  string command = 1;
+  string description = 2;
+}
+
+message WebhookStatus {
+  string last_delivery_at = 1;
+  string last_success_at = 2;
+  string last_error = 3;
+  int32 last_status_code = 4;
+}
+
+message BotInfo {
+  string id = 1;
+  string username = 2;
+  string display_name = 3;
+  string avatar_url = 4;
+  string description = 5;
+  repeated BotCommand commands = 6;
+  string webhook_url = 7;
+  bool is_inline = 8;
+  google.protobuf.Timestamp created_at = 9;
+  WebhookStatus webhook_status = 10;
+  int32 chat_count = 11;
+}
+
+message ListBotsResponse {
+  repeated BotInfo bots = 1;
+}
+
+message GetBotRequest {
+  string owner_id = 1;
+  string bot_id = 2;
+}
+
+message UpdateBotRequest {
+  string owner_id = 1;
+  string bot_id = 2;
+  optional string description = 3;
+  repeated BotCommand commands = 4;
+  optional string webhook_url = 5;
+  optional bool is_inline = 6;
+}
+
+message DeleteBotRequest {
+  string owner_id = 1;
+  string bot_id = 2;
+}
+
+message RegenerateTokenRequest {
+  string owner_id = 1;
+  string bot_id = 2;
+}
+
+message RegenerateTokenResponse {
+  string token = 1;
+}

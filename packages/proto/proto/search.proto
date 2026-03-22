@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package aluf.search.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+service SearchService {
+  rpc Search(SearchRequest) returns (SearchResponse);
+  rpc IndexDocument(IndexDocumentRequest) returns (Empty);
+  rpc DeleteDocument(DeleteDocumentRequest) returns (Empty);
+}
+
+message Empty {}
+
+enum SearchScope {
+  SEARCH_SCOPE_UNSPECIFIED = 0;
+  SEARCH_SCOPE_ALL = 1;
+  SEARCH_SCOPE_MESSAGES = 2;
+  SEARCH_SCOPE_USERS = 3;
+  SEARCH_SCOPE_CHATS = 4;
+  SEARCH_SCOPE_FILES = 5;
+}
+
+enum DocumentType {
+  DOCUMENT_TYPE_UNSPECIFIED = 0;
+  DOCUMENT_TYPE_MESSAGE = 1;
+  DOCUMENT_TYPE_USER = 2;
+  DOCUMENT_TYPE_CHAT = 3;
+  DOCUMENT_TYPE_FILE = 4;
+}
+
+message SearchFilter {
+  string chat_id = 1;
+  string sender_id = 2;
+  google.protobuf.Timestamp from_date = 3;
+  google.protobuf.Timestamp to_date = 4;
+  repeated string content_types = 5;
+  bool has_media = 6;
+}
+
+message SearchRequest {
+  string query = 1;
+  string user_id = 2;
+  SearchScope scope = 3;
+  SearchFilter filter = 4;
+  int32 limit = 5;
+  int32 offset = 6;
+}
+
+message SearchHit {
+  string id = 1;
+  DocumentType type = 2;
+  float score = 3;
+  map<string, string> highlights = 4;
+  google.protobuf.Struct document = 5;
+  google.protobuf.Timestamp created_at = 6;
+}
+
+message SearchResponse {
+  repeated SearchHit hits = 1;
+  int32 total_count = 2;
+  int64 took_ms = 3;
+}
+
+message IndexDocumentRequest {
+  string id = 1;
+  DocumentType type = 2;
+  google.protobuf.Struct content = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+message DeleteDocumentRequest {
+  string id = 1;
+  DocumentType type = 2;
+}

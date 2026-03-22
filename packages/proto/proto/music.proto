@@ -1,0 +1,165 @@
+syntax = "proto3";
+
+package aluf.music.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service MusicLibrary {
+  rpc ListTracks(ListTracksRequest) returns (ListTracksResponse);
+  rpc GetTrack(GetTrackRequest) returns (MusicTrackResponse);
+  rpc CreateTrack(CreateTrackRequest) returns (MusicTrackResponse);
+  rpc UpdateTrack(UpdateTrackRequest) returns (MusicTrackResponse);
+  rpc DeleteTrack(DeleteTrackRequest) returns (Empty);
+  /** Публичные треки всех пользователей (is_public = true), поиск по названию/исполнителю */
+  rpc SearchPublicTracks(SearchPublicTracksRequest) returns (ListTracksResponse);
+
+  rpc ListPlaylists(ListPlaylistsRequest) returns (ListPlaylistsResponse);
+  rpc GetPlaylist(GetPlaylistRequest) returns (GetPlaylistResponse);
+  rpc CreatePlaylist(CreatePlaylistRequest) returns (PlaylistSummaryResponse);
+  rpc UpdatePlaylist(UpdatePlaylistRequest) returns (PlaylistSummaryResponse);
+  rpc DeletePlaylist(DeletePlaylistRequest) returns (Empty);
+
+  rpc AddTrackToPlaylist(AddTrackToPlaylistRequest) returns (Empty);
+  rpc RemoveTrackFromPlaylist(RemoveTrackFromPlaylistRequest) returns (Empty);
+  rpc ReorderPlaylist(ReorderPlaylistRequest) returns (Empty);
+}
+
+message Empty {}
+
+enum TrackSortField {
+  TRACK_SORT_FIELD_UNSPECIFIED = 0;
+  TRACK_SORT_FIELD_TITLE = 1;
+  TRACK_SORT_FIELD_ARTIST = 2;
+  TRACK_SORT_FIELD_CREATED_AT = 3;
+}
+
+message ListTracksRequest {
+  string user_id = 1;
+  TrackSortField sort_by = 2;
+  bool sort_desc = 3;
+  /** Поиск по названию, исполнителю, жанру (в своей библиотеке) */
+  optional string query = 4;
+}
+
+message MusicTrackResponse {
+  string id = 1;
+  string user_id = 2;
+  string title = 3;
+  string artist = 4;
+  string genre = 5;
+  string audio_media_id = 6;
+  optional string cover_media_id = 7;
+  google.protobuf.Timestamp created_at = 8;
+  optional bool is_public = 9;
+  /** Для каталога: @username владельца */
+  optional string owner_username = 10;
+}
+
+message ListTracksResponse {
+  repeated MusicTrackResponse tracks = 1;
+}
+
+message GetTrackRequest {
+  string user_id = 1;
+  string track_id = 2;
+}
+
+message CreateTrackRequest {
+  string user_id = 1;
+  string title = 2;
+  string artist = 3;
+  string genre = 4;
+  string audio_media_id = 5;
+  optional string cover_media_id = 6;
+  optional bool is_public = 7;
+}
+
+message UpdateTrackRequest {
+  string user_id = 1;
+  string track_id = 2;
+  optional bool is_public = 3;
+}
+
+message SearchPublicTracksRequest {
+  string viewer_user_id = 1;
+  string query = 2;
+  int32 limit = 3;
+}
+
+message DeleteTrackRequest {
+  string user_id = 1;
+  string track_id = 2;
+}
+
+message ListPlaylistsRequest {
+  string user_id = 1;
+  optional string query = 2;
+}
+
+message PlaylistSummaryResponse {
+  string id = 1;
+  string user_id = 2;
+  string name = 3;
+  string description = 4;
+  string cover_media_id = 5;
+  int32 track_count = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message ListPlaylistsResponse {
+  repeated PlaylistSummaryResponse playlists = 1;
+}
+
+message GetPlaylistRequest {
+  string user_id = 1;
+  string playlist_id = 2;
+}
+
+message PlaylistTrackEntry {
+  MusicTrackResponse track = 1;
+  int32 position = 2;
+}
+
+message GetPlaylistResponse {
+  PlaylistSummaryResponse summary = 1;
+  repeated PlaylistTrackEntry entries = 2;
+}
+
+message CreatePlaylistRequest {
+  string user_id = 1;
+  string name = 2;
+  string description = 3;
+  string cover_media_id = 4;
+}
+
+message UpdatePlaylistRequest {
+  string user_id = 1;
+  string playlist_id = 2;
+  optional string name = 3;
+  optional string description = 4;
+  optional string cover_media_id = 5;
+}
+
+message DeletePlaylistRequest {
+  string user_id = 1;
+  string playlist_id = 2;
+}
+
+message AddTrackToPlaylistRequest {
+  string user_id = 1;
+  string playlist_id = 2;
+  string track_id = 3;
+  optional int32 position = 4;
+}
+
+message RemoveTrackFromPlaylistRequest {
+  string user_id = 1;
+  string playlist_id = 2;
+  string track_id = 3;
+}
+
+message ReorderPlaylistRequest {
+  string user_id = 1;
+  string playlist_id = 2;
+  repeated string track_ids_in_order = 3;
+}

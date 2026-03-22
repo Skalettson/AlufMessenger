@@ -1,0 +1,106 @@
+# Aluf Messenger — public source tree
+# Keep secrets and generated artifacts out of version control.
+
+# Dependencies
+node_modules/
+.pnpm-store/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+out/
+*.tsbuildinfo
+.turbo/
+turbo.log
+.next/
+
+# Env and secrets (never commit real values)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+secrets/
+credentials/
+.kubeconfig
+kubeconfig
+kube_config
+
+# Test / coverage
+coverage/
+.nyc_output/
+*.lcov
+test-results/
+playwright-report/
+playwright/.cache/
+vitest.config.ts.timestamp-*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Cache / temp
+.cache/
+.temp/
+tmp/
+temp/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+*.tmp
+*.temp
+
+# Flutter / mobile
+mobile/.dart_tool/
+mobile/.packages
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+mobile/android/.gradle/
+mobile/android/app/release/
+mobile/android/app/debug/
+mobile/android/app/build/
+mobile/android/build/
+mobile/android/.idea/
+mobile/.idea/
+mobile/pubspec.lock
+
+# Tauri / desktop
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/gen/
+
+# App-specific local env
+apps/*/.env
+apps/*/.env.local
+apps/*/.env.*.local
+
+# Misc
+.vercel
+*.orig
+*.pid
+*.seed
+*.pid.lock
+*.cpuprofile
+*.heapsnapshot

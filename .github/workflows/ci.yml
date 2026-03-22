@@ -1,0 +1,131 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CI: true
+  NODE_ENV: test
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/aluf_ci
+  REDIS_URL: redis://localhost:6379
+  NATS_URL: nats://localhost:4222
+  MINIO_ENDPOINT: localhost
+  MINIO_PORT: "9000"
+  MINIO_ACCESS_KEY: minio
+  MINIO_SECRET_KEY: miniosecret
+  MINIO_BUCKET: aluf-media
+  MINIO_USE_SSL: "false"
+  JWT_PRIVATE_KEY_PATH: keys/private.pem
+  JWT_PUBLIC_KEY_PATH: keys/public.pem
+  API_GATEWAY_URL: http://127.0.0.1:3000
+  NEXT_PUBLIC_FIREBASE_API_KEY: ""
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ""
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: ""
+  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ""
+  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ""
+  NEXT_PUBLIC_FIREBASE_APP_ID: ""
+  NEXT_PUBLIC_FIREBASE_VAPID_KEY: ""
+
+jobs:
+  lint-test-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: aluf_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+      nats:
+        image: nats:2.10-alpine
+        ports:
+          - 4222:4222
+      minio:
+        image: minio/minio:latest
+        env:
+          MINIO_ROOT_USER: minio
+          MINIO_ROOT_PASSWORD: miniosecret
+        ports:
+          - 9000:9000
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate JWT keys for CI
+        run: |
+          mkdir -p keys
+          openssl genpkey -algorithm RSA -out keys/private.pem -pkeyopt rsa_keygen_bits:2048
+          openssl rsa -in keys/private.pem -pubout -out keys/public.pem
+
+      - name: Write .env for Turbo
+        run: |
+          cat > .env << 'EOF'
+          DATABASE_URL=${{ env.DATABASE_URL }}
+          REDIS_URL=${{ env.REDIS_URL }}
+          NATS_URL=${{ env.NATS_URL }}
+          MINIO_ENDPOINT=${{ env.MINIO_ENDPOINT }}
+          MINIO_PORT=${{ env.MINIO_PORT }}
+          MINIO_ACCESS_KEY=${{ env.MINIO_ACCESS_KEY }}
+          MINIO_SECRET_KEY=${{ env.MINIO_SECRET_KEY }}
+          MINIO_BUCKET=${{ env.MINIO_BUCKET }}
+          MINIO_USE_SSL=${{ env.MINIO_USE_SSL }}
+          JWT_PRIVATE_KEY_PATH=${{ env.JWT_PRIVATE_KEY_PATH }}
+          JWT_PUBLIC_KEY_PATH=${{ env.JWT_PUBLIC_KEY_PATH }}
+          API_GATEWAY_URL=${{ env.API_GATEWAY_URL }}
+          NODE_ENV=test
+          EOF
+
+      - name: Wait for MinIO (service has no health check)
+        run: sleep 5
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build

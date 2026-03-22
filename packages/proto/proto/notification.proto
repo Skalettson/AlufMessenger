@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package aluf.notification.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+service NotificationService {
+  rpc SendNotification(SendNotificationRequest) returns (Empty);
+  rpc RegisterToken(RegisterTokenRequest) returns (Empty);
+  rpc UnregisterToken(UnregisterTokenRequest) returns (Empty);
+  rpc UpdatePreferences(UpdatePreferencesRequest) returns (Empty);
+  rpc GetPreferences(GetPreferencesRequest) returns (NotificationPreferences);
+}
+
+message Empty {}
+
+enum NotificationType {
+  NOTIFICATION_TYPE_UNSPECIFIED = 0;
+  NOTIFICATION_TYPE_MESSAGE = 1;
+  NOTIFICATION_TYPE_MENTION = 2;
+  NOTIFICATION_TYPE_REACTION = 3;
+  NOTIFICATION_TYPE_CALL = 4;
+  NOTIFICATION_TYPE_GROUP_INVITE = 5;
+  NOTIFICATION_TYPE_CONTACT_JOINED = 6;
+  NOTIFICATION_TYPE_STORY = 7;
+  NOTIFICATION_TYPE_SYSTEM = 8;
+}
+
+enum TokenPlatform {
+  TOKEN_PLATFORM_UNSPECIFIED = 0;
+  TOKEN_PLATFORM_FCM = 1;
+  TOKEN_PLATFORM_APNS = 2;
+  TOKEN_PLATFORM_WEB_PUSH = 3;
+}
+
+message SendNotificationRequest {
+  repeated string recipient_ids = 1;
+  NotificationType type = 2;
+  string title = 3;
+  string body = 4;
+  string icon_url = 5;
+  string action_url = 6;
+  string chat_id = 7;
+  string message_id = 8;
+  string sender_id = 9;
+  google.protobuf.Struct data = 10;
+  int32 badge_count = 11;
+  string sound = 12;
+  bool silent = 13;
+}
+
+message RegisterTokenRequest {
+  string user_id = 1;
+  string token = 2;
+  TokenPlatform platform = 3;
+  string device_id = 4;
+}
+
+message UnregisterTokenRequest {
+  string user_id = 1;
+  string token = 2;
+  string device_id = 3;
+}
+
+message UpdatePreferencesRequest {
+  string user_id = 1;
+  NotificationPreferences preferences = 2;
+}
+
+message GetPreferencesRequest {
+  string user_id = 1;
+}
+
+message ChatNotificationOverride {
+  string chat_id = 1;
+  bool muted = 2;
+  google.protobuf.Timestamp muted_until = 3;
+  string sound = 4;
+}
+
+message NotificationPreferences {
+  bool messages_enabled = 1;
+  bool mentions_enabled = 2;
+  bool reactions_enabled = 3;
+  bool calls_enabled = 4;
+  bool group_invites_enabled = 5;
+  bool contact_joined_enabled = 6;
+  bool stories_enabled = 7;
+  bool show_preview = 8;
+  string default_sound = 9;
+  bool vibrate = 10;
+  bool led_enabled = 11;
+  string led_color = 12;
+  repeated ChatNotificationOverride chat_overrides = 13;
+}

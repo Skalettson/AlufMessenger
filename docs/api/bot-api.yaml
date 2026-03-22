@@ -1,0 +1,500 @@
+openapi: 3.0.3
+info:
+  title: Aluf Bot API
+  description: |
+    API для разработки ботов в мессенджере Aluf. Вы получаете токен при создании бота в настройках (Настройки → Боты) и вызываете методы, подставляя токен в путь запроса.
+    
+    ## Базовый URL
+    Задаётся средой развёртывания; в этой спецификации не фиксируется.
+    
+    ## Аутентификация
+    Токен бота передаётся в пути: сегмент пути имеет вид `bot:{token}`. Например, для токена `abc123` путь для getMe: `POST /bot:abc123/getMe`.
+    
+    ## Получение токена
+    1. Войдите в приложение Aluf (web или мобильное).
+    2. Настройки → Боты → Создать бота.
+    3. Сохраните выданный токен (он показывается один раз при создании и при регенерации).
+    
+    ## Подпись webhook-запросов
+    При установке webhook можно задать секрет (или он генерируется автоматически). Каждый POST-запрос с обновлением содержит заголовок `X-Aluf-Webhook-Signature: sha256={hex}`, где hex — HMAC-SHA256 от сырого тела запроса (UTF-8) с ключом секрета. Проверяйте подпись на стороне бота для защиты от подделок.
+  version: 1.0.0
+  contact:
+    name: Aluf Team
+
+servers:
+  - url: https://example.com
+    description: Example base URL (replace with your deployment)
+
+tags:
+  - name: Bot
+    description: Информация о боте
+  - name: Messages
+    description: Отправка и редактирование сообщений
+  - name: Updates
+    description: Поллинг и webhook обновлений
+  - name: Webhook
+    description: Настройка webhook
+
+paths:
+  /bot:{token}/getMe:
+    post:
+      tags: [Bot]
+      summary: Получить информацию о боте
+      parameters:
+        - name: token
+          in: path
+          required: true
+          description: Токен бота (сегмент пути — bot:YOUR_TOKEN)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Информация о боте
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      is_bot:
+                        type: boolean
+                        example: true
+                      username:
+                        type: string
+                      first_name:
+                        type: string
+                      photo_url:
+                        type: string
+                        nullable: true
+                      description:
+                        type: string
+                        nullable: true
+                      commands:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            command:
+                              type: string
+                            description:
+                              type: string
+        '401':
+          description: Неверный токен
+
+  /bot:{token}/sendMessage:
+    post:
+      tags: [Messages]
+      summary: Отправить текстовое сообщение
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chat_id, text]
+              properties:
+                chat_id:
+                  type: string
+                  description: ID чата (UUID)
+                text:
+                  type: string
+                  maxLength: 4096
+                reply_to_message_id:
+                  type: string
+                  description: ID сообщения, на которое отвечаем (ответ в тред)
+                reply_markup:
+                  type: string
+                  description: JSON-строка клавиатуры (InlineKeyboardMarkup или ReplyKeyboardMarkup)
+      responses:
+        '200':
+          description: Сообщение отправлено
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  result:
+                    type: object
+                    description: Отправленное сообщение
+        '400':
+          description: Неверные параметры
+        '401':
+          description: Неверный токен
+
+  /bot:{token}/getUpdates:
+    post:
+      tags: [Updates]
+      summary: Получить обновления (long polling)
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                offset:
+                  type: integer
+                  description: ID следующего обновления
+                limit:
+                  type: integer
+                  default: 100
+                timeout:
+                  type: integer
+                  description: Таймаут long polling в секундах
+      responses:
+        '200':
+          description: Список обновлений
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        updateId:
+                          type: integer
+                        message:
+                          type: object
+                        callbackQuery:
+                          type: object
+                        inlineQuery:
+                          type: object
+        '401':
+          description: Неверный токен
+
+  /bot:{token}/setWebhook:
+    post:
+      tags: [Webhook]
+      summary: Установить URL для получения обновлений
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url]
+              properties:
+                url:
+                  type: string
+                  format: uri
+                  description: URL для POST-запросов с обновлениями. В production допускается только HTTPS.
+                secret:
+                  type: string
+                  description: |
+                    Опциональный секрет для подписи тела запроса. Если не передан, сервер сгенерирует его сам.
+                    Проверка на стороне бота: заголовок `X-Aluf-Webhook-Signature: sha256={hex}` — HMAC-SHA256 от тела запроса с ключом secret.
+      responses:
+        '200':
+          description: Webhook установлен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  result:
+                    type: boolean
+        '401':
+          description: Неверный токен
+
+  /bot:{token}/deleteWebhook:
+    post:
+      tags: [Webhook]
+      summary: Удалить webhook
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Webhook удалён
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  result:
+                    type: boolean
+        '401':
+          description: Неверный токен
+
+  /bot:{token}/sendPhoto:
+    post:
+      tags: [Messages]
+      summary: Отправить фото
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chat_id, photo]
+              properties:
+                chat_id:
+                  type: string
+                photo:
+                  type: string
+                  description: URL или file_id медиа
+                caption:
+                  type: string
+                reply_markup:
+                  type: string
+      responses:
+        '200':
+          description: Фото отправлено
+        '401':
+          description: Неверный токен
+
+  /bot:{token}/sendDocument:
+    post:
+      tags: [Messages]
+      summary: Отправить документ
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chat_id, document]
+              properties:
+                chat_id:
+                  type: string
+                document:
+                  type: string
+                caption:
+                  type: string
+                reply_markup:
+                  type: string
+      responses:
+        '200':
+          description: Документ отправлен
+        '401':
+          description: Неверный токен
+
+  /bot:{token}/editMessageText:
+    post:
+      tags: [Messages]
+      summary: Редактировать текст сообщения
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chat_id, message_id, text]
+              properties:
+                chat_id:
+                  type: string
+                message_id:
+                  type: string
+                text:
+                  type: string
+                reply_markup:
+                  type: string
+      responses:
+        '200':
+          description: Сообщение отредактировано
+        '401':
+          description: Неверный токен
+
+  /bot:{token}/answerCallbackQuery:
+    post:
+      tags: [Messages]
+      summary: Ответ на callback query (нажатие кнопки)
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                callback_query_id:
+                  type: string
+                text:
+                  type: string
+                show_alert:
+                  type: boolean
+      responses:
+        '200':
+          description: Ответ отправлен
+        '401':
+          description: Неверный токен
+
+  /bot:{token}/deleteMessage:
+    post:
+      tags: [Messages]
+      summary: Удалить сообщение
+      description: Бот может удалять только свои сообщения (или быть админом в группе для delete_for_everyone).
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chat_id, message_id]
+              properties:
+                chat_id:
+                  type: string
+                message_id:
+                  type: string
+                delete_for_everyone:
+                  type: boolean
+                  default: true
+      responses:
+        '200':
+          description: Сообщение удалено
+        '400':
+          description: Сообщение не принадлежит боту или нет прав
+        '401':
+          description: Неверный токен
+
+  /bot:{token}/getChat:
+    post:
+      tags: [Bot]
+      summary: Получить информацию о чате
+      description: Возвращает тип чата, название, количество участников. Бот должен быть участником чата.
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chat_id]
+              properties:
+                chat_id:
+                  type: string
+      responses:
+        '200':
+          description: Данные чата (id, type, title, member_count)
+        '401':
+          description: Неверный токен
+        '403':
+          description: Бот не участник чата
+
+  /bot:{token}/pinMessage:
+    post:
+      tags: [Messages]
+      summary: Закрепить сообщение
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chat_id, message_id]
+              properties:
+                chat_id:
+                  type: string
+                message_id:
+                  type: string
+      responses:
+        '200':
+          description: Сообщение закреплено
+        '401':
+          description: Неверный токен
+
+  /bot:{token}/unpinMessage:
+    post:
+      tags: [Messages]
+      summary: Открепить сообщение
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chat_id, message_id]
+              properties:
+                chat_id:
+                  type: string
+                message_id:
+                  type: string
+      responses:
+        '200':
+          description: Сообщение откреплено
+        '401':
+          description: Неверный токен

@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "drizzle-orm": ["../../node_modules/drizzle-orm"],
+      "drizzle-orm/*": ["../../node_modules/drizzle-orm/*"]
+    },
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
+    "declaration": true,
+    "composite": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+}

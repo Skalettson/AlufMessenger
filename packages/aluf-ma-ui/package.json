@@ -1,0 +1,57 @@
+{
+  "name": "@aluf/ma-ui",
+  "version": "1.0.0",
+  "description": "UI-кит и дизайн-система для Aluf Mini-Apps - быстрее и красивее Telegram Mini-Apps",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./components": {
+      "import": "./dist/components/index.js",
+      "types": "./dist/components/index.d.ts"
+    },
+    "./hooks": {
+      "import": "./dist/hooks/index.js",
+      "types": "./dist/hooks/index.d.ts"
+    },
+    "./styles": "./dist/styles/main.css",
+    "./tokens": "./dist/tokens/index.js"
+  },
+  "sideEffects": ["*.css"],
+  "scripts": {
+    "build": "tsc && pnpm build:styles",
+    "build:styles": "tailwindcss -i ./src/styles/main.css -o ./dist/styles/main.css",
+    "dev": "tsc --watch",
+    "lint": "eslint src/**/*.ts src/**/*.tsx",
+    "test": "vitest run",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "clean": "rimraf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@aluf/ma-core": "workspace:*",
+    "@aluf/ma-sdk": "workspace:*",
+    "clsx": "^2.1.0",
+    "tailwind-merge": "^2.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@storybook/react": "^8.0.0",
+    "@storybook/addon-essentials": "^8.0.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.0.0",
+    "rimraf": "^6.0.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

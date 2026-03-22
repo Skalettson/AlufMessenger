@@ -1,0 +1,150 @@
+syntax = "proto3";
+
+package aluf.auth.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service AuthService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc VerifyCode(VerifyCodeRequest) returns (AuthTokens);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc VerifyLogin(VerifyLoginRequest) returns (AuthTokens);
+  rpc RefreshToken(RefreshTokenRequest) returns (AuthTokens);
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+  rpc Logout(LogoutRequest) returns (Empty);
+  rpc GetSessions(GetSessionsRequest) returns (GetSessionsResponse);
+  rpc TerminateSession(TerminateSessionRequest) returns (Empty);
+  rpc TerminateSessionAdmin(TerminateSessionAdminRequest) returns (Empty);
+  rpc Setup2FA(Setup2FARequest) returns (Setup2FAResponse);
+  rpc Verify2FA(Verify2FARequest) returns (Empty);
+  rpc Disable2FA(Disable2FARequest) returns (Empty);
+}
+
+message Empty {}
+
+enum AuthMethod {
+  AUTH_METHOD_UNSPECIFIED = 0;
+  AUTH_METHOD_PHONE = 1;
+  AUTH_METHOD_EMAIL = 2;
+}
+
+message RegisterRequest {
+  AuthMethod method = 1;
+  string phone = 2;
+  string email = 3;
+  string username = 4;
+  string display_name = 5;
+}
+
+message RegisterResponse {
+  string verification_id = 1;
+  google.protobuf.Timestamp expires_at = 2;
+  string dev_code = 3;
+}
+
+message VerifyCodeRequest {
+  string verification_id = 1;
+  string code = 2;
+}
+
+message AuthTokens {
+  string access_token = 1;
+  string refresh_token = 2;
+  int64 expires_in = 3;
+}
+
+message LoginRequest {
+  AuthMethod method = 1;
+  string phone = 2;
+  string email = 3;
+  DeviceInfo device_info = 4;
+}
+
+message LoginResponse {
+  string verification_id = 1;
+  google.protobuf.Timestamp expires_at = 2;
+  bool requires_2fa = 3;
+  string dev_code = 4;
+}
+
+message VerifyLoginRequest {
+  string verification_id = 1;
+  string code = 2;
+  string two_factor_code = 3;
+  /** Real client IP from API gateway (X-Forwarded-For / socket) */
+  string client_ip = 4;
+  /** User-Agent for session display */
+  string user_agent = 5;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message ValidateTokenRequest {
+  string access_token = 1;
+}
+
+message ValidateTokenResponse {
+  bool valid = 1;
+  string user_id = 2;
+  string username = 3;
+  string aluf_id = 4;
+  string session_id = 5;
+}
+
+message LogoutRequest {
+  string session_id = 1;
+}
+
+message GetSessionsRequest {
+  string user_id = 1;
+}
+
+message GetSessionsResponse {
+  repeated Session sessions = 1;
+}
+
+message TerminateSessionRequest {
+  string session_id = 1;
+  string user_id = 2;
+}
+
+message TerminateSessionAdminRequest {
+  string session_id = 1;
+}
+
+message Setup2FARequest {
+  string user_id = 1;
+}
+
+message Setup2FAResponse {
+  string secret = 1;
+  string qr_code_url = 2;
+  repeated string backup_codes = 3;
+}
+
+message Verify2FARequest {
+  string user_id = 1;
+  string code = 2;
+}
+
+message Disable2FARequest {
+  string user_id = 1;
+  string code = 2;
+}
+
+message DeviceInfo {
+  string platform = 1;
+  string device_name = 2;
+  string app_version = 3;
+  string os_version = 4;
+}
+
+message Session {
+  string id = 1;
+  DeviceInfo device_info = 2;
+  string ip = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp last_active_at = 5;
+}

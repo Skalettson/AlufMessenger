@@ -1,0 +1,64 @@
+{
+  "name": "aluf-messenger",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Алуф — современный, быстрый и безопасный мессенджер нового поколения с мощной платформой Mini-Apps",
+  "scripts": {
+    "build": "turbo run build",
+    "build:ma": "turbo run build --filter=@aluf/ma-*",
+    "dev": "node scripts/kill-ports.js && dotenv -e .env -- turbo run dev --concurrency 31",
+    "dev:ma": "turbo run dev --filter=@aluf/ma-* --concurrency 10",
+    "dev:kill-ports": "node scripts/kill-ports.js",
+    "lint": "turbo run lint",
+    "lint:ma": "turbo run lint --filter=@aluf/ma-*",
+    "test": "turbo run test",
+    "test:ma": "turbo run test --filter=@aluf/ma-*",
+    "test:all": "turbo run test",
+    "test:unit": "turbo run test",
+    "test:integration": "turbo run test",
+    "test:e2e": "turbo run test",
+    "test:security": "turbo run test",
+    "test:perf": "turbo run test",
+    "test:coverage": "turbo run test",
+    "test:service": "turbo run test",
+    "test:unit:coverage": "turbo run test",
+    "clean": "turbo run clean",
+    "clean:all": "npx rimraf apps/*/dist apps/*/.next apps/*/tsconfig.tsbuildinfo packages/*/dist packages/*/tsconfig.tsbuildinfo .turbo apps/*/.turbo packages/*/.turbo",
+    "clean:ma": "npx rimraf packages/aluf-ma-*/dist packages/aluf-ma-*/tsconfig.tsbuildinfo apps/ma-*/dist apps/ma-dashboard/.next apps/ma-dashboard/.turbo",
+    "rebuild": "pnpm run clean:all && pnpm run build",
+    "rebuild:ma": "pnpm run clean:ma && pnpm run build:ma",
+    "db:generate": "turbo run db:generate --filter=@aluf/db",
+    "db:migrate": "turbo run db:migrate --filter=@aluf/db",
+    "db:push": "turbo run db:push --filter=@aluf/db",
+    "proto:generate": "turbo run generate --filter=@aluf/proto",
+    "keys:generate": "node scripts/generate-jwt-keys.js",
+    "test:auth": "node apps/web/scripts/test-auth-store.mjs",
+    "ma:create": "pnpm exec aluf-ma create",
+    "ma:dev": "pnpm --filter=@aluf/ma-platform run start:dev",
+    "ma:dashboard": "pnpm --filter=@aluf/ma-dashboard run dev"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.4",
+  "dependencies": {
+    "dotenv": "^16.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "dotenv-cli": "^11.0.0",
+    "drizzle-kit": "^0.31.10",
+    "eslint": "^9.0.0",
+    "pg": "^8.20.0",
+    "turbo": "^2.4.0",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "drizzle-orm": "0.38.4"
+    }
+  }
+}

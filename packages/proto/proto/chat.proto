@@ -1,0 +1,422 @@
+syntax = "proto3";
+
+package aluf.chat.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+service ChatService {
+  rpc CreateChat(CreateChatRequest) returns (ChatResponse);
+  rpc GetChat(GetChatRequest) returns (ChatResponse);
+  rpc GetUserChats(GetUserChatsRequest) returns (GetUserChatsResponse);
+  rpc UpdateChat(UpdateChatRequest) returns (ChatResponse);
+  rpc DeleteChat(DeleteChatRequest) returns (Empty);
+  rpc AddMembers(AddMembersRequest) returns (Empty);
+  rpc RemoveMember(RemoveMemberRequest) returns (Empty);
+  rpc GetMembers(GetMembersRequest) returns (GetMembersResponse);
+  rpc UpdateMemberRole(UpdateMemberRoleRequest) returns (Empty);
+  rpc JoinChat(JoinChatRequest) returns (ChatResponse);
+  rpc LeaveChat(LeaveChatRequest) returns (Empty);
+  rpc PinChat(PinChatRequest) returns (Empty);
+  rpc UnpinChat(UnpinChatRequest) returns (Empty);
+  rpc CreateInviteLink(CreateInviteLinkRequest) returns (InviteLinkResponse);
+  rpc GetChatByInviteLink(GetChatByInviteLinkRequest) returns (ChatResponse);
+  rpc ListChats(ListChatsRequest) returns (ListChatsResponse);
+  rpc DeleteChatAdmin(DeleteChatAdminRequest) returns (Empty);
+  
+  // Новые методы для расширенных функций групп
+  rpc BanMember(BanMemberRequest) returns (Empty);
+  rpc UnbanMember(UnbanMemberRequest) returns (Empty);
+  rpc GetBannedMembers(GetBannedMembersRequest) returns (GetBannedMembersResponse);
+  rpc GetAuditLog(GetAuditLogRequest) returns (GetAuditLogResponse);
+  rpc UpdateModerationSettings(UpdateModerationSettingsRequest) returns (ModerationSettingsResponse);
+  rpc GetModerationSettings(GetModerationSettingsRequest) returns (ModerationSettingsResponse);
+  
+  // Методы для тем/топиков
+  rpc CreateTopic(CreateTopicRequest) returns (TopicResponse);
+  rpc UpdateTopic(UpdateTopicRequest) returns (TopicResponse);
+  rpc DeleteTopic(DeleteTopicRequest) returns (Empty);
+  rpc GetTopics(GetTopicsRequest) returns (GetTopicsResponse);
+  rpc ToggleTopic(ToggleTopicRequest) returns (Empty);
+  
+  rpc MuteChat(MuteChatRequest) returns (Empty);
+  rpc UnmuteChat(UnmuteChatRequest) returns (Empty);
+  rpc ArchiveChat(ArchiveChatRequest) returns (Empty);
+  rpc UnarchiveChat(UnarchiveChatRequest) returns (Empty);
+}
+
+message Empty {}
+
+enum ChatType {
+  CHAT_TYPE_UNSPECIFIED = 0;
+  CHAT_TYPE_DIRECT = 1;
+  CHAT_TYPE_GROUP = 2;
+  CHAT_TYPE_CHANNEL = 3;
+  CHAT_TYPE_SUPERGROUP = 4;
+  CHAT_TYPE_SAVED = 5;
+}
+
+enum MemberRole {
+  MEMBER_ROLE_UNSPECIFIED = 0;
+  MEMBER_ROLE_MEMBER = 1;
+  MEMBER_ROLE_ADMIN = 2;
+  MEMBER_ROLE_OWNER = 3;
+}
+
+message CreateChatRequest {
+  ChatType type = 1;
+  string name = 2;
+  string description = 3;
+  string avatar_url = 4;
+  string creator_id = 5;
+  repeated string member_ids = 6;
+  google.protobuf.Struct metadata = 7;
+}
+
+message GetChatRequest {
+  string chat_id = 1;
+  string user_id = 2;
+}
+
+message GetUserChatsRequest {
+  string user_id = 1;
+  int32 limit = 2;
+  string cursor = 3;
+}
+
+message GetUserChatsResponse {
+  repeated ChatResponse chats = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message UpdateChatRequest {
+  string chat_id = 1;
+  string user_id = 2;
+  optional string name = 3;
+  optional string description = 4;
+  optional string avatar_url = 5;
+  optional bool is_public = 6;
+  optional int32 slow_mode_seconds = 7;
+  google.protobuf.Struct metadata = 8;
+  optional string username = 9;
+}
+
+message DeleteChatRequest {
+  string chat_id = 1;
+  string user_id = 2;
+}
+
+message AddMembersRequest {
+  string chat_id = 1;
+  string added_by = 2;
+  repeated string user_ids = 3;
+}
+
+message RemoveMemberRequest {
+  string chat_id = 1;
+  string removed_by = 2;
+  string user_id = 3;
+}
+
+message GetMembersRequest {
+  string chat_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+  /** Текущий пользователь (для отображения имён из контактов). */
+  string viewer_user_id = 4;
+}
+
+message GetMembersResponse {
+  repeated ChatMember members = 1;
+  int32 total_count = 2;
+}
+
+message ChatMember {
+  string user_id = 1;
+  string chat_id = 2;
+  MemberRole role = 3;
+  google.protobuf.Timestamp joined_at = 4;
+  string display_name = 5;
+  string avatar_url = 6;
+  bool is_online = 7;
+  bool notifications_muted = 8;
+  bool is_bot = 9;
+  bool is_premium = 10;
+  string premium_badge_emoji = 11;
+}
+
+message UpdateMemberRoleRequest {
+  string chat_id = 1;
+  string updated_by = 2;
+  string user_id = 3;
+  MemberRole role = 4;
+}
+
+message JoinChatRequest {
+  string chat_id = 1;
+  string user_id = 2;
+  string invite_link = 3;
+}
+
+message LeaveChatRequest {
+  string chat_id = 1;
+  string user_id = 2;
+}
+
+message PinChatRequest {
+  string chat_id = 1;
+  string user_id = 2;
+}
+
+message UnpinChatRequest {
+  string chat_id = 1;
+  string user_id = 2;
+}
+
+message CreateInviteLinkRequest {
+  string chat_id = 1;
+  string created_by = 2;
+  int32 max_uses = 3;
+  google.protobuf.Timestamp expires_at = 4;
+}
+
+message InviteLinkResponse {
+  string link = 1;
+  string chat_id = 2;
+  string created_by = 3;
+  int32 max_uses = 4;
+  int32 use_count = 5;
+  google.protobuf.Timestamp expires_at = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message GetChatByInviteLinkRequest {
+  string invite_link = 1;
+}
+
+message ListChatsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+  ChatType type = 3;
+}
+
+message ListChatsResponse {
+  repeated ChatResponse chats = 1;
+  int32 total_count = 2;
+}
+
+message DeleteChatAdminRequest {
+  string chat_id = 1;
+}
+
+message LastMessage {
+  string id = 1;
+  string sender_id = 2;
+  string text_content = 3;
+  string content_type = 4;
+  google.protobuf.Timestamp sent_at = 5;
+  string sender_display_name = 6;
+}
+
+message ChatResponse {
+  string id = 1;
+  ChatType type = 2;
+  string name = 3;
+  string description = 4;
+  string avatar_url = 5;
+  string creator_id = 6;
+  bool is_public = 7;
+  int32 member_count = 8;
+  int32 slow_mode_seconds = 9;
+  LastMessage last_message = 10;
+  int32 unread_count = 11;
+  bool is_pinned = 12;
+  bool is_muted = 13;
+  bool is_archived = 14;
+  google.protobuf.Struct metadata = 15;
+  google.protobuf.Timestamp created_at = 16;
+  google.protobuf.Timestamp updated_at = 17;
+  bool is_bot = 18;
+  string my_role = 19;
+  bool can_post_messages = 20;
+  bool is_premium = 21;
+  string other_user_id = 22;  // для личных чатов — id собеседника (для онлайна)
+}
+
+// === Баны участников ===
+message BanMemberRequest {
+  string chat_id = 1;
+  string banned_by = 2;
+  string user_id = 3;
+  string reason = 4;
+  google.protobuf.Timestamp expires_at = 5;
+  bool delete_messages = 6;
+}
+
+message UnbanMemberRequest {
+  string chat_id = 1;
+  string unbanned_by = 2;
+  string user_id = 3;
+}
+
+message GetBannedMembersRequest {
+  string chat_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message BannedMember {
+  string user_id = 1;
+  string chat_id = 2;
+  string banned_by = 3;
+  string banned_by_name = 4;
+  string reason = 5;
+  google.protobuf.Timestamp expires_at = 6;
+  google.protobuf.Timestamp created_at = 7;
+  string display_name = 8;
+  string avatar_url = 9;
+}
+
+message GetBannedMembersResponse {
+  repeated BannedMember members = 1;
+  int32 total_count = 2;
+}
+
+// === Audit Log ===
+message GetAuditLogRequest {
+  string chat_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+  string action_filter = 4;
+}
+
+message AuditLogEntry {
+  string id = 1;
+  string chat_id = 2;
+  string actor_id = 3;
+  string actor_name = 4;
+  string action = 5;
+  string target_user_id = 6;
+  string target_user_name = 7;
+  google.protobuf.Struct details = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+message GetAuditLogResponse {
+  repeated AuditLogEntry entries = 1;
+  int32 total_count = 2;
+}
+
+// === Настройки модерации ===
+message ModerationSettings {
+  repeated string forbidden_words = 1;
+  string forbidden_words_mode = 2;
+  bool anti_spam_enabled = 3;
+  int32 anti_spam_messages_limit = 4;
+  int32 anti_spam_time_window = 5;
+  string anti_spam_action = 6;
+  bool links_allowed = 7;
+  bool links_require_approval = 8;
+  bool captcha_enabled = 9;
+  int32 captcha_timeout = 10;
+  bool media_require_approval = 11;
+  bool auto_delete_spam = 12;
+  bool auto_ban_repeat_offenders = 13;
+}
+
+message UpdateModerationSettingsRequest {
+  string chat_id = 1;
+  string updated_by = 2;
+  ModerationSettings settings = 3;
+}
+
+message GetModerationSettingsRequest {
+  string chat_id = 1;
+}
+
+message ModerationSettingsResponse {
+  ModerationSettings settings = 1;
+}
+
+// === Темы/топики ===
+message CreateTopicRequest {
+  string chat_id = 1;
+  string created_by = 2;
+  string title = 3;
+  string icon = 4;
+  int32 color = 5;
+}
+
+message UpdateTopicRequest {
+  string chat_id = 1;
+  string topic_id = 2;
+  string updated_by = 3;
+  optional string title = 4;
+  optional string icon = 5;
+  optional int32 color = 6;
+}
+
+message DeleteTopicRequest {
+  string chat_id = 1;
+  string topic_id = 2;
+  string deleted_by = 3;
+}
+
+message GetTopicsRequest {
+  string chat_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message Topic {
+  string id = 1;
+  string chat_id = 2;
+  string title = 3;
+  string icon = 4;
+  int32 color = 5;
+  string created_by = 6;
+  string created_by_name = 7;
+  bool is_closed = 8;
+  bool is_pinned = 9;
+  int32 message_count = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+message TopicResponse {
+  Topic topic = 1;
+}
+
+message GetTopicsResponse {
+  repeated Topic topics = 1;
+  int32 total_count = 2;
+}
+
+message ToggleTopicRequest {
+  string chat_id = 1;
+  string topic_id = 2;
+  string toggled_by = 3;
+  bool is_closed = 4;
+}
+
+message MuteChatRequest {
+  string chat_id = 1;
+  string user_id = 2;
+  optional google.protobuf.Timestamp muted_until = 3;
+}
+
+message UnmuteChatRequest {
+  string chat_id = 1;
+  string user_id = 2;
+}
+
+message ArchiveChatRequest {
+  string chat_id = 1;
+  string user_id = 2;
+}
+
+message UnarchiveChatRequest {
+  string chat_id = 1;
+  string user_id = 2;
+}

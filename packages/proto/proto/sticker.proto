@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+package aluf.sticker.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service StickerService {
+  rpc CreatePack(CreatePackRequest) returns (StickerPackResponse);
+  rpc AddStickerToPack(AddStickerToPackRequest) returns (Empty);
+  rpc ListMyPacks(ListMyPacksRequest) returns (ListMyPacksResponse);
+  rpc ListPublicPacks(ListPublicPacksRequest) returns (ListPublicPacksResponse);
+  rpc AddPackToMe(AddPackToMeRequest) returns (Empty);
+  rpc RemovePackFromMe(RemovePackFromMeRequest) returns (Empty);
+  rpc GetPackWithStickers(GetPackWithStickersRequest) returns (GetPackWithStickersResponse);
+  rpc GetPackByStickerMediaId(GetPackByStickerMediaIdRequest) returns (StickerPackResponse);
+  rpc DeletePack(DeletePackRequest) returns (Empty);
+  rpc RemoveStickerFromPack(RemoveStickerFromPackRequest) returns (Empty);
+}
+
+message Empty {}
+
+message CreatePackRequest {
+  string creator_id = 1;
+  string name = 2;
+  bool is_public = 3;
+  string description = 4;
+}
+
+message AddStickerToPackRequest {
+  string pack_id = 1;
+  string media_id = 2;
+  string user_id = 3;
+}
+
+message ListMyPacksRequest {
+  string user_id = 1;
+}
+
+message ListPublicPacksRequest {
+  string search = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message AddPackToMeRequest {
+  string user_id = 1;
+  string pack_id = 2;
+}
+
+message RemovePackFromMeRequest {
+  string user_id = 1;
+  string pack_id = 2;
+}
+
+message GetPackWithStickersRequest {
+  string pack_id = 1;
+}
+
+message GetPackByStickerMediaIdRequest {
+  string media_id = 1;
+  string user_id = 2;
+}
+
+message DeletePackRequest {
+  string pack_id = 1;
+  string user_id = 2;
+}
+
+message RemoveStickerFromPackRequest {
+  string pack_id = 1;
+  string media_id = 2;
+  string user_id = 3;
+}
+
+message StickerPackResponse {
+  string id = 1;
+  string name = 2;
+  bool is_premium = 3;
+  string creator_id = 4;
+  bool is_public = 5;
+  string cover_media_id = 6;
+  string description = 7;
+  google.protobuf.Timestamp created_at = 8;
+  bool is_mine = 9;
+  bool added_to_me = 10;
+  /** Обложка для превью: cover или первый стикер пака, если обложка не задана */
+  string preview_media_id = 11;
+}
+
+message StickerItem {
+  string media_id = 1;
+  string file_name = 2;
+  string mime_type = 3;
+}
+
+message ListMyPacksResponse {
+  repeated StickerPackResponse packs = 1;
+}
+
+message ListPublicPacksResponse {
+  repeated StickerPackResponse packs = 1;
+}
+
+message GetPackWithStickersResponse {
+  StickerPackResponse pack = 1;
+  repeated StickerItem stickers = 2;
+}

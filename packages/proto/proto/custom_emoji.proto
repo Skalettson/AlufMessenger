@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package aluf.custom_emoji.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service CustomEmojiService {
+  rpc CreateEmoji(CreateEmojiRequest) returns (CustomEmojiResponse);
+  rpc ListMyEmoji(ListMyEmojiRequest) returns (ListMyEmojiResponse);
+  rpc ListPublicEmoji(ListPublicEmojiRequest) returns (ListPublicEmojiResponse);
+  rpc AddEmojiToMe(AddEmojiToMeRequest) returns (Empty);
+  rpc RemoveEmojiFromMe(RemoveEmojiFromMeRequest) returns (Empty);
+  rpc GetEmojiByShortcode(GetEmojiByShortcodeRequest) returns (CustomEmojiResponse);
+  rpc GetEmojiByIds(GetEmojiByIdsRequest) returns (GetEmojiByIdsResponse);
+  rpc DeleteEmoji(DeleteEmojiRequest) returns (Empty);
+}
+
+message Empty {}
+
+message CreateEmojiRequest {
+  string creator_id = 1;
+  string media_id = 2;
+  string shortcode = 3;
+}
+
+message ListMyEmojiRequest {
+  string user_id = 1;
+}
+
+message ListPublicEmojiRequest {
+  string search = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message AddEmojiToMeRequest {
+  string user_id = 1;
+  string emoji_id = 2;
+}
+
+message RemoveEmojiFromMeRequest {
+  string user_id = 1;
+  string emoji_id = 2;
+}
+
+message GetEmojiByShortcodeRequest {
+  string shortcode = 1;
+}
+
+message GetEmojiByIdsRequest {
+  repeated string ids = 1;
+}
+
+message DeleteEmojiRequest {
+  string emoji_id = 1;
+  string user_id = 2;
+}
+
+message CustomEmojiResponse {
+  string id = 1;
+  string creator_id = 2;
+  string media_id = 3;
+  string shortcode = 4;
+  google.protobuf.Timestamp created_at = 5;
+  string url = 6;
+}
+
+message ListMyEmojiResponse {
+  repeated CustomEmojiResponse emoji = 1;
+}
+
+message ListPublicEmojiResponse {
+  repeated CustomEmojiResponse emoji = 1;
+}
+
+message GetEmojiByIdsResponse {
+  repeated CustomEmojiResponse emoji = 1;
+}

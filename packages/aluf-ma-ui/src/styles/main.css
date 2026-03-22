@@ -1,0 +1,249 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   CSS Variables / Design Tokens
+   ============================================ */
+
+:root {
+  /* Colors - Light Theme */
+  --aluf-color-background: #ffffff;
+  --aluf-color-background-secondary: #f5f5f5;
+  --aluf-color-surface: #ffffff;
+  --aluf-color-surface-elevated: #ffffff;
+  --aluf-color-text: #000000;
+  --aluf-color-text-secondary: #8e8e93;
+  --aluf-color-text-tertiary: #c7c7cc;
+  --aluf-color-primary: #3b82f6;
+  --aluf-color-primary-text: #ffffff;
+  --aluf-color-destructive: #ff3b30;
+  --aluf-color-destructive-text: #ffffff;
+  --aluf-color-separator: rgba(60, 60, 67, 0.12);
+  --aluf-color-overlay: rgba(0, 0, 0, 0.4);
+
+  /* Spacing */
+  --aluf-spacing-xs: 4px;
+  --aluf-spacing-sm: 8px;
+  --aluf-spacing-md: 12px;
+  --aluf-spacing-lg: 16px;
+  --aluf-spacing-xl: 20px;
+  --aluf-spacing-2xl: 24px;
+
+  /* Border Radius */
+  --aluf-radius-sm: 8px;
+  --aluf-radius-md: 12px;
+  --aluf-radius-lg: 16px;
+  --aluf-radius-xl: 20px;
+  --aluf-radius-2xl: 24px;
+  --aluf-radius-full: 9999px;
+
+  /* Typography */
+  --aluf-font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  --aluf-font-size-xs: 11px;
+  --aluf-font-size-sm: 13px;
+  --aluf-font-size-md: 15px;
+  --aluf-font-size-lg: 17px;
+  --aluf-font-size-xl: 20px;
+  --aluf-font-size-2xl: 24px;
+  --aluf-font-size-3xl: 34px;
+
+  /* Animation */
+  --aluf-duration-fast: 150ms;
+  --aluf-duration-normal: 300ms;
+  --aluf-duration-slow: 500ms;
+  --aluf-easing-standard: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --aluf-easing-spring: cubic-bezier(0.175, 0.885, 0.32, 1.175);
+
+  /* Shadows */
+  --aluf-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --aluf-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --aluf-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --aluf-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+
+  /* Blur */
+  --aluf-blur-material: blur(20px);
+}
+
+.dark {
+  /* Colors - Dark Theme */
+  --aluf-color-background: #000000;
+  --aluf-color-background-secondary: #1c1c1c;
+  --aluf-color-surface: #1c1c1c;
+  --aluf-color-surface-elevated: #2c2c2c;
+  --aluf-color-text: #ffffff;
+  --aluf-color-text-secondary: #98989d;
+  --aluf-color-text-tertiary: #636366;
+  --aluf-color-primary: #0a84ff;
+  --aluf-color-primary-text: #ffffff;
+  --aluf-color-destructive: #ff453a;
+  --aluf-color-destructive-text: #ffffff;
+  --aluf-color-separator: rgba(84, 84, 88, 0.65);
+  --aluf-color-overlay: rgba(0, 0, 0, 0.6);
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--aluf-font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--aluf-color-background);
+  color: var(--aluf-color-text);
+  font-size: var(--aluf-font-size-md);
+  line-height: 1.5;
+}
+
+/* ============================================
+   Component Styles
+   ============================================ */
+
+.aluf-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  border-radius: var(--aluf-radius-xl);
+  transition: all var(--aluf-duration-fast) var(--aluf-easing-standard);
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.aluf-button:active {
+  transform: scale(0.96);
+}
+
+.aluf-button--primary {
+  background-color: var(--aluf-color-primary);
+  color: var(--aluf-color-primary-text);
+}
+
+.aluf-button--destructive {
+  background-color: var(--aluf-color-destructive);
+  color: var(--aluf-color-destructive-text);
+}
+
+.aluf-cell {
+  display: flex;
+  align-items: center;
+  padding: var(--aluf-spacing-lg);
+  background-color: var(--aluf-color-surface);
+  border-bottom: 0.5px solid var(--aluf-color-separator);
+  transition: background-color var(--aluf-duration-fast);
+}
+
+.aluf-cell--interactive {
+  cursor: pointer;
+}
+
+.aluf-cell--interactive:active {
+  background-color: var(--aluf-color-background-secondary);
+}
+
+.aluf-list {
+  background-color: var(--aluf-color-surface);
+  border-radius: var(--aluf-radius-2xl);
+  overflow: hidden;
+}
+
+.aluf-modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--aluf-color-overlay);
+  backdrop-filter: var(--aluf-blur-material);
+  -webkit-backdrop-filter: var(--aluf-blur-material);
+  z-index: 1000;
+}
+
+.aluf-modal__content {
+  background-color: var(--aluf-color-surface-elevated);
+  border-radius: var(--aluf-radius-2xl);
+  padding: var(--aluf-spacing-2xl);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: var(--aluf-shadow-xl);
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+
+.aluf-safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.aluf-safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.aluf-safe-area-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.aluf-safe-area-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+.aluf-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aluf-glass {
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.dark .aluf-glass {
+  background-color: rgba(28, 28, 28, 0.7);
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+
+@keyframes aluf-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes aluf-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.aluf-animate-fade-in {
+  animation: aluf-fade-in var(--aluf-duration-normal) var(--aluf-easing-standard);
+}
+
+.aluf-animate-slide-up {
+  animation: aluf-slide-up var(--aluf-duration-normal) var(--aluf-easing-standard);
+}

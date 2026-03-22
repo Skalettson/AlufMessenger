@@ -1,0 +1,1761 @@
+openapi: 3.0.3
+info:
+  title: Aluf Messenger API
+  description: |
+    REST API для мессенджера нового поколения **Aluf**.
+    
+    ## Аутентификация
+    Все защищённые эндпоинты требуют JWT Bearer токен в заголовке `Authorization`.
+    Токены генерируются через `/v1/auth/login` → `/v1/auth/verify`.
+    
+    ## Лимиты
+    - Rate limit: 100 req/min (глобальный), 20 req/min (auth)
+    - Максимальный размер сообщения: 4096 символов
+    - Максимальный размер файла: 4 ГБ (8 ГБ для Premium)
+    - Максимум участников группы: 200 000
+    
+    ## WebSocket
+    Real-time подключение через защищённый WebSocket endpoint среды, в которой развёрнут сервис (конкретный URL не фиксируется в этой спецификации).
+  version: 1.0.0
+  contact:
+    name: Aluf Team
+  license:
+    name: MIT
+
+servers:
+  - url: https://example.com/v1
+    description: Example base URL (replace with your deployment)
+
+tags:
+  - name: Auth
+    description: Регистрация, вход, OTP, JWT, двухфакторная аутентификация
+  - name: Users
+    description: Профили пользователей, контакты, блокировки, настройки приватности
+  - name: Chats
+    description: Личные чаты, группы, каналы, ссылки-приглашения
+  - name: Messages
+    description: Отправка, редактирование, удаление, пины, реакции, пересылка
+  - name: Media
+    description: Загрузка файлов, получение URL, обработка изображений
+  - name: Calls
+    description: VoIP и видео звонки, сигналинг WebRTC
+  - name: Stories
+    description: Истории (24 часа), просмотры, реакции
+  - name: Search
+    description: Глобальный поиск по пользователям, сообщениям, чатам
+  - name: Bots
+    description: Управление ботами — создание, список, редактирование, регенерация токена
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: NOT_FOUND
+        message:
+          type: string
+          example: "Ресурс не найден"
+        statusCode:
+          type: integer
+          example: 404
+        details:
+          type: object
+
+    Pagination:
+      type: object
+      properties:
+        nextCursor:
+          type: string
+          nullable: true
+        hasMore:
+          type: boolean
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        alufId:
+          type: string
+          example: "100000001"
+        username:
+          type: string
+          example: alice
+        displayName:
+          type: string
+          example: Alice
+        bio:
+          type: string
+          nullable: true
+        avatarUrl:
+          type: string
+          format: uri
+          nullable: true
+        isOnline:
+          type: boolean
+        lastSeen:
+          type: string
+          format: date-time
+          nullable: true
+        isPremium:
+          type: boolean
+
+    Chat:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [private, group, channel]
+        name:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        avatarUrl:
+          type: string
+          nullable: true
+        memberCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+        chatId:
+          type: string
+        senderId:
+          type: string
+        text:
+          type: string
+          nullable: true
+        type:
+          type: string
+          enum: [text, image, video, audio, document, voice, sticker, location, contact]
+        replyToId:
+          type: string
+          nullable: true
+        forwardFromId:
+          type: string
+          nullable: true
+        mediaId:
+          type: string
+          nullable: true
+        isPinned:
+          type: boolean
+        isEdited:
+          type: boolean
+        selfDestructAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        editedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    MediaFile:
+      type: object
+      properties:
+        id:
+          type: string
+        fileName:
+          type: string
+        mimeType:
+          type: string
+        size:
+          type: integer
+        url:
+          type: string
+          format: uri
+        thumbnailUrl:
+          type: string
+          format: uri
+          nullable: true
+        width:
+          type: integer
+          nullable: true
+        height:
+          type: integer
+          nullable: true
+        duration:
+          type: number
+          nullable: true
+
+    Call:
+      type: object
+      properties:
+        id:
+          type: string
+        chatId:
+          type: string
+        initiatorId:
+          type: string
+        type:
+          type: string
+          enum: [voice, video]
+        status:
+          type: string
+          enum: [ringing, active, ended, missed, declined]
+        startedAt:
+          type: string
+          format: date-time
+        endedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    Story:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        mediaId:
+          type: string
+        caption:
+          type: string
+          nullable: true
+        viewCount:
+          type: integer
+        expiresAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    TokenPair:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+
+    BotCommand:
+      type: object
+      properties:
+        command:
+          type: string
+          example: start
+        description:
+          type: string
+          example: Начать диалог
+
+    Bot:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+          example: my_bot
+        displayName:
+          type: string
+          example: My Bot
+        avatarUrl:
+          type: string
+          format: uri
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        commands:
+          type: array
+          items:
+            $ref: '#/components/schemas/BotCommand'
+        webhookUrl:
+          type: string
+          format: uri
+          nullable: true
+        isInline:
+          type: boolean
+          default: false
+        createdAt:
+          type: string
+          format: date-time
+
+    BotCreate:
+      type: object
+      required: [username, displayName]
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 32
+          pattern: '^[a-zA-Z][a-zA-Z0-9_]{2,31}$'
+          example: my_bot
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 64
+          example: My Bot
+
+    BotUpdate:
+      type: object
+      properties:
+        description:
+          type: string
+          maxLength: 512
+          nullable: true
+        commands:
+          type: array
+          items:
+            $ref: '#/components/schemas/BotCommand'
+        webhookUrl:
+          type: string
+          format: uri
+          nullable: true
+        isInline:
+          type: boolean
+
+    BotTokenResponse:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+          description: Токен бота (показывается только при создании и регенерации)
+
+paths:
+  # === AUTH ===
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Регистрация по номеру телефона
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone]
+              properties:
+                phone:
+                  type: string
+                  example: "+79001234567"
+                displayName:
+                  type: string
+                  example: Алиса
+      responses:
+        '200':
+          description: OTP отправлен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestId:
+                    type: string
+                  expiresAt:
+                    type: string
+                    format: date-time
+        '429':
+          description: Слишком много запросов
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Вход — запрос OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone]
+              properties:
+                phone:
+                  type: string
+                  example: "+79001234567"
+      responses:
+        '200':
+          description: OTP отправлен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestId:
+                    type: string
+                  expiresAt:
+                    type: string
+                    format: date-time
+
+  /auth/verify:
+    post:
+      tags: [Auth]
+      summary: Подтверждение OTP — получение токенов
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [requestId, code]
+              properties:
+                requestId:
+                  type: string
+                code:
+                  type: string
+                  pattern: '^\d{6}$'
+                  example: "123456"
+                deviceInfo:
+                  type: object
+                  properties:
+                    platform:
+                      type: string
+                    model:
+                      type: string
+                    os:
+                      type: string
+      responses:
+        '200':
+          description: Успешная верификация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+        '401':
+          description: Неверный или просроченный OTP
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Обновление access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Новая пара токенов
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+        '401':
+          description: Невалидный refresh token
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Выход из текущей сессии
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Сессия завершена
+
+  /auth/2fa/setup:
+    post:
+      tags: [Auth]
+      summary: Настройка двухфакторной аутентификации (TOTP)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: QR-код и секрет для настройки
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  secret:
+                    type: string
+                  qrCodeUrl:
+                    type: string
+                  backupCodes:
+                    type: array
+                    items:
+                      type: string
+
+  /auth/2fa/verify:
+    post:
+      tags: [Auth]
+      summary: Подтверждение 2FA кода
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+                  pattern: '^\d{6}$'
+      responses:
+        '200':
+          description: 2FA подтверждено
+
+  # === BOTS ===
+  /bots:
+    get:
+      tags: [Bots]
+      summary: Список ботов текущего пользователя
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Список ботов
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bots:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Bot'
+    post:
+      tags: [Bots]
+      summary: Создать бота
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BotCreate'
+      responses:
+        '200':
+          description: Бот создан (токен возвращается только при создании)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  username:
+                    type: string
+                  displayName:
+                    type: string
+                  token:
+                    type: string
+        '400':
+          description: Неверные данные (например, username занят или не соответствует формату)
+
+  /bots/{id}:
+    get:
+      tags: [Bots]
+      summary: Получить бота по ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Данные бота (без токена)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bot'
+        '404':
+          description: Бот не найден
+    patch:
+      tags: [Bots]
+      summary: Обновить бота (описание, команды, webhook, is_inline)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BotUpdate'
+      responses:
+        '200':
+          description: Обновлённый бот
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bot'
+        '404':
+          description: Бот не найден
+    delete:
+      tags: [Bots]
+      summary: Удалить бота
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Бот удалён
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+        '404':
+          description: Бот не найден
+
+  /bots/{id}/regenerate-token:
+    post:
+      tags: [Bots]
+      summary: Регенерировать токен бота
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Новый токен (показывается один раз)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BotTokenResponse'
+        '404':
+          description: Бот не найден
+
+  # === USERS ===
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Получить текущий профиль
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Профиль пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    patch:
+      tags: [Users]
+      summary: Обновить профиль
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                displayName:
+                  type: string
+                  maxLength: 64
+                username:
+                  type: string
+                  pattern: '^[a-zA-Z][a-zA-Z0-9_]{4,31}$'
+                bio:
+                  type: string
+                  maxLength: 500
+      responses:
+        '200':
+          description: Профиль обновлён
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /users/{userId}:
+    get:
+      tags: [Users]
+      summary: Получить профиль пользователя по ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Профиль пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Пользователь не найден
+
+  /users/search:
+    get:
+      tags: [Users]
+      summary: Поиск пользователей
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema:
+            type: string
+            minLength: 2
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+            maximum: 50
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Результаты поиска
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  total:
+                    type: integer
+
+  /users/contacts:
+    get:
+      tags: [Users]
+      summary: Получить список контактов
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Список контактов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      tags: [Users]
+      summary: Добавить контакт
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contactId]
+              properties:
+                contactId:
+                  type: string
+      responses:
+        '201':
+          description: Контакт добавлен
+
+  /users/contacts/{contactId}:
+    delete:
+      tags: [Users]
+      summary: Удалить контакт
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: contactId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Контакт удалён
+
+  /users/block/{userId}:
+    post:
+      tags: [Users]
+      summary: Заблокировать пользователя
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Пользователь заблокирован
+    delete:
+      tags: [Users]
+      summary: Разблокировать пользователя
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Пользователь разблокирован
+
+  /users/privacy:
+    get:
+      tags: [Users]
+      summary: Получить настройки приватности
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Настройки приватности
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lastSeen:
+                    type: string
+                    enum: [everyone, contacts, nobody]
+                  profilePhoto:
+                    type: string
+                    enum: [everyone, contacts, nobody]
+                  onlineStatus:
+                    type: string
+                    enum: [everyone, contacts, nobody]
+    patch:
+      tags: [Users]
+      summary: Обновить настройки приватности
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lastSeen:
+                  type: string
+                  enum: [everyone, contacts, nobody]
+                profilePhoto:
+                  type: string
+                  enum: [everyone, contacts, nobody]
+                onlineStatus:
+                  type: string
+                  enum: [everyone, contacts, nobody]
+      responses:
+        '200':
+          description: Настройки обновлены
+
+  # === CHATS ===
+  /chats:
+    get:
+      tags: [Chats]
+      summary: Получить список чатов
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: cursor
+          schema:
+            type: string
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: Список чатов
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chats:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Chat'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+    post:
+      tags: [Chats]
+      summary: Создать чат (private/group/channel)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type]
+              properties:
+                type:
+                  type: string
+                  enum: [private, group, channel]
+                name:
+                  type: string
+                  maxLength: 255
+                description:
+                  type: string
+                  maxLength: 1000
+                memberIds:
+                  type: array
+                  items:
+                    type: string
+                  description: Для private — один ID; для group — список
+      responses:
+        '201':
+          description: Чат создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chat'
+
+  /chats/{chatId}:
+    get:
+      tags: [Chats]
+      summary: Получить чат по ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: chatId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chat'
+    patch:
+      tags: [Chats]
+      summary: Обновить чат (имя, описание, настройки)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: chatId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                slowModeInterval:
+                  type: integer
+                  description: Секунды (0 = выключен)
+      responses:
+        '200':
+          description: Чат обновлён
+    delete:
+      tags: [Chats]
+      summary: Удалить чат
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: chatId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Чат удалён
+
+  /chats/{chatId}/members:
+    post:
+      tags: [Chats]
+      summary: Добавить участников
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: chatId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [memberIds]
+              properties:
+                memberIds:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Участники добавлены
+
+  /chats/{chatId}/members/{userId}:
+    delete:
+      tags: [Chats]
+      summary: Удалить участника
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: chatId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Участник удалён
+
+  /chats/{chatId}/members/{userId}/role:
+    patch:
+      tags: [Chats]
+      summary: Изменить роль участника
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: chatId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role:
+                  type: string
+                  enum: [owner, admin, moderator, member]
+      responses:
+        '200':
+          description: Роль обновлена
+
+  /chats/{chatId}/leave:
+    post:
+      tags: [Chats]
+      summary: Покинуть чат
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: chatId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Вы вышли из чата
+
+  /chats/join/{code}:
+    post:
+      tags: [Chats]
+      summary: Вступить по ссылке-приглашению
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Вы вступили в чат
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chat'
+
+  # === MESSAGES ===
+  /chats/{chatId}/messages:
+    get:
+      tags: [Messages]
+      summary: Получить сообщения чата (курсорная пагинация)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: chatId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: cursor
+          schema:
+            type: string
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 50
+            maximum: 200
+      responses:
+        '200':
+          description: Список сообщений
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Message'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+    post:
+      tags: [Messages]
+      summary: Отправить сообщение
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: chatId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  maxLength: 4096
+                type:
+                  type: string
+                  enum: [text, image, video, audio, document, voice, sticker, location, contact]
+                  default: text
+                replyToId:
+                  type: string
+                mediaId:
+                  type: string
+                selfDestructSeconds:
+                  type: integer
+      responses:
+        '201':
+          description: Сообщение отправлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+
+  /chats/{chatId}/messages/{messageId}:
+    patch:
+      tags: [Messages]
+      summary: Редактировать сообщение
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: chatId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: messageId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  maxLength: 4096
+      responses:
+        '200':
+          description: Сообщение отредактировано
+    delete:
+      tags: [Messages]
+      summary: Удалить сообщение
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: chatId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: messageId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: forAll
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Сообщение удалено
+
+  /chats/{chatId}/messages/{messageId}/pin:
+    post:
+      tags: [Messages]
+      summary: Закрепить сообщение
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: chatId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: messageId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Сообщение закреплено
+    delete:
+      tags: [Messages]
+      summary: Открепить сообщение
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: chatId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: messageId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Сообщение откреплено
+
+  /chats/{chatId}/messages/{messageId}/react:
+    post:
+      tags: [Messages]
+      summary: Поставить реакцию
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: chatId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: messageId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [emoji]
+              properties:
+                emoji:
+                  type: string
+                  example: "👍"
+      responses:
+        '200':
+          description: Реакция добавлена/удалена
+
+  /chats/{chatId}/messages/forward:
+    post:
+      tags: [Messages]
+      summary: Переслать сообщение
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: chatId
+          required: true
+          schema:
+            type: string
+            description: Целевой чат
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [messageId, fromChatId]
+              properties:
+                messageId:
+                  type: string
+                fromChatId:
+                  type: string
+      responses:
+        '201':
+          description: Сообщение переслано
+
+  # === MEDIA ===
+  /media/upload:
+    post:
+      tags: [Media]
+      summary: Инициализировать загрузку файла
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fileName, mimeType, size]
+              properties:
+                fileName:
+                  type: string
+                mimeType:
+                  type: string
+                size:
+                  type: integer
+                  description: Размер файла в байтах
+      responses:
+        '200':
+          description: URL для загрузки
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uploadId:
+                    type: string
+                  uploadUrl:
+                    type: string
+                    format: uri
+                  expiresAt:
+                    type: string
+                    format: date-time
+
+  /media/upload/{uploadId}/complete:
+    post:
+      tags: [Media]
+      summary: Завершить загрузку
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: uploadId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Файл обработан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaFile'
+
+  /media/{fileId}:
+    get:
+      tags: [Media]
+      summary: Получить метаданные файла и URL для скачивания
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: fileId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: variant
+          schema:
+            type: string
+            enum: [original, thumbnail]
+            default: original
+      responses:
+        '200':
+          description: Метаданные файла
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaFile'
+    delete:
+      tags: [Media]
+      summary: Удалить файл
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: fileId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Файл удалён
+
+  # === CALLS ===
+  /calls:
+    post:
+      tags: [Calls]
+      summary: Начать звонок
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chatId, type]
+              properties:
+                chatId:
+                  type: string
+                type:
+                  type: string
+                  enum: [voice, video]
+      responses:
+        '201':
+          description: Звонок инициирован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Call'
+
+  /calls/{callId}/join:
+    post:
+      tags: [Calls]
+      summary: Присоединиться к звонку
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: callId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Подключение к звонку
+
+  /calls/{callId}/leave:
+    post:
+      tags: [Calls]
+      summary: Покинуть звонок
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: callId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Вы покинули звонок
+
+  /calls/{callId}/end:
+    post:
+      tags: [Calls]
+      summary: Завершить звонок
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: callId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Звонок завершён
+
+  /calls/{callId}/signal:
+    post:
+      tags: [Calls]
+      summary: WebRTC сигналинг (offer/answer/ICE)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: callId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, payload]
+              properties:
+                type:
+                  type: string
+                  enum: [offer, answer, ice-candidate]
+                payload:
+                  type: object
+      responses:
+        '200':
+          description: Сигнал отправлен
+
+  # === STORIES ===
+  /stories:
+    post:
+      tags: [Stories]
+      summary: Создать историю
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mediaId]
+              properties:
+                mediaId:
+                  type: string
+                caption:
+                  type: string
+                  maxLength: 500
+                privacy:
+                  type: object
+                  properties:
+                    visibility:
+                      type: string
+                      enum: [everyone, contacts, selected, except]
+                    selectedUserIds:
+                      type: array
+                      items:
+                        type: string
+      responses:
+        '201':
+          description: История создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Story'
+
+  /stories/contacts:
+    get:
+      tags: [Stories]
+      summary: Получить истории контактов
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Истории сгруппированные по пользователям
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    user:
+                      $ref: '#/components/schemas/User'
+                    stories:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Story'
+
+  /stories/{storyId}:
+    get:
+      tags: [Stories]
+      summary: Получить историю + отметить просмотр
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: storyId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: История
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Story'
+    delete:
+      tags: [Stories]
+      summary: Удалить историю
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: storyId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: История удалена
+
+  /stories/{storyId}/react:
+    post:
+      tags: [Stories]
+      summary: Реакция на историю
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: storyId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [emoji]
+              properties:
+                emoji:
+                  type: string
+      responses:
+        '200':
+          description: Реакция отправлена
+
+  # === SEARCH ===
+  /search:
+    get:
+      tags: [Search]
+      summary: Глобальный поиск
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [users, messages, chats]
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+            maximum: 50
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Результаты поиска
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                        id:
+                          type: string
+                        score:
+                          type: number
+                        highlights:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              field:
+                                type: string
+                              snippet:
+                                type: string
+                        data:
+                          type: object
+                  total:
+                    type: integer

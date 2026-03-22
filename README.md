@@ -38,12 +38,6 @@ GitHub Actions run on pushes and pull requests to `main` / `master`:
 | [Secret scan](.github/Skalettson/AlufMessenger/workflows/gitleaks.yml) | [Gitleaks](https://github.com/Skalettson/AlufMessenger/gitleaks/gitleaks) on full history |
 | [Dependency audit](.github/Skalettson/AlufMessenger/workflows/audit.yml) | `pnpm audit` (high/critical; does not fail the default branch if vendors lag) |
 
-Replace `OWNER` and `REPO` after you create the GitHub repository:
-
-```markdown
-[![CI](https://github.com/Skalettson/AlufMessenger/actions/workflows/ci.yml/badge.svg)](https://github.com/Skalettson/AlufMessenger/actions/workflows/ci.yml)
-```
-
 ### First-time push (this tree is a separate clone from the private monorepo)
 
 ```bash

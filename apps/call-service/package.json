@@ -21,7 +21,7 @@
     "@nestjs/microservices": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
     "drizzle-orm": "^0.38.0",
-    "ioredis": "^5.4.0",
+    "ioredis": "^5.10.1",
     "nats": "^2.28.0",
     "postgres": "^3.4.0",
     "reflect-metadata": "^0.2.0",

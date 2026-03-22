@@ -1,17 +1,19 @@
-# Contributing
+# Участие в проекте
 
-Thank you for your interest in Aluf Messenger.
+Спасибо за интерес к Aluf Messenger.
 
-## How to contribute
+## Как внести вклад
 
-1. **Issues** — Use GitHub issues for bug reports and feature discussions that do not involve undisclosed security problems.
-2. **Security** — For vulnerabilities, follow [`SECURITY.md`](SECURITY.md) instead of opening a public issue.
-3. **Pull requests** — Keep changes focused, match existing style, and include tests when the change warrants them.
+1. **Issues** — используйте GitHub issues для сообщений об ошибках и обсуждения функций, **не** связанных с нераскрытыми проблемами безопасности.
+2. **Безопасность** — для уязвимостей следуйте [`SECURITY.md`](SECURITY.md), а не открывайте публичный issue.
+3. **Pull requests** — небольшие сфокусированные изменения, стиль как в существующем коде, тесты — там, где это уместно.
 
-## What we do not use this repository for
+## Чего мы не делаем в этом репозитории
 
-This public tree is focused on **transparency and review**. It does not include operational runbooks, production deployment steps, or internal hosting details. Please avoid asking maintainers to document private infrastructure in issues or PRs.
+Публичное дерево предназначено для **прозрачности и ревью кода**. В нём нет операционных runbook’ов, шагов продакшен-деплоя и внутренних деталей хостинга. Просьбы документировать приватную инфраструктуру в issues и PR не рассматриваются как цель этого репозитория.
 
-## Code of conduct
+## Правила поведения
 
-Be respectful and constructive. Harassment and abuse are not tolerated.
+Уважительное и конструктивное общение. Домогательства и оскорбления не допускаются.
+
+*English: [CONTRIBUTING.md.en](CONTRIBUTING.md.en)*

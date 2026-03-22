@@ -1,0 +1,67 @@
+# Aluf Messenger
+
+**Messaging without borders. Privacy without compromise.**
+
+Aluf Messenger is a modern, fast messenger with **secret chats**, **rich media**, **voice and video calls**, **bots**, **Mini-Apps**, and a **cross-platform** experience (web, mobile, desktop).
+
+This repository publishes **source code for transparency and independent review**. It is **not** an operations manual: hosting layout, build pipelines, and deployment procedures for any production environment are **not** documented here.
+
+## What you will find here
+
+- **Clients and services** that implement the product’s behavior.
+- **High-level architecture** diagrams and security-oriented documentation under [`docs/`](docs/).
+- **OpenAPI** descriptions of HTTP surfaces where they help understand functionality ([`docs/api/`](docs/api/)).
+- **Protocol buffers** for service boundaries ([`packages/proto/`](packages/proto/)).
+
+## Product capabilities (summary)
+
+| Area | Highlights |
+|------|------------|
+| Messaging | Direct chats, groups, channels; read receipts; typing indicators |
+| Privacy | End-to-end encryption for secret chats (Signal-style ratchet); TLS for transport |
+| Media | Photos, documents, voice messages; media handling in dedicated services |
+| Calls | WebRTC-based 1:1 voice and video (see [`docs/calls-webrtc.md`](docs/calls-webrtc.md)) |
+| Platform | Bots and Mini-Apps; searchable music and extensibility hooks described in `docs/` |
+| Clients | Web, Flutter mobile, Tauri desktop (sources under `apps/` and related packages) |
+
+## Security
+
+If you believe you have found a **security vulnerability**, please follow [`SECURITY.md`](SECURITY.md) (or [`SECURITY.md.en`](SECURITY.md.en)). Do **not** open a public issue for undisclosed security bugs.
+
+## Continuous integration
+
+GitHub Actions run on pushes and pull requests to `main` / `master`:
+
+| Workflow | Purpose |
+|----------|---------|
+| [CI](.github/workflows/ci.yml) | Install dependencies, **lint**, **test**, **build** (with Postgres, Redis, NATS, MinIO service containers) |
+| [Secret scan](.github/workflows/gitleaks.yml) | [Gitleaks](https://github.com/gitleaks/gitleaks) on full history |
+| [Dependency audit](.github/workflows/audit.yml) | `pnpm audit` (high/critical; does not fail the default branch if vendors lag) |
+
+### First-time push (this tree is a separate clone from the private monorepo)
+
+```bash
+cd messenger-src
+git remote add origin https://github.com/OWNER/REPO.git
+git branch -M main
+git push -u origin main
+```
+
+## License
+
+See [`LICENSE`](LICENSE).
+
+## Legal
+
+- [`docs/legal/terms-of-service.md`](docs/legal/terms-of-service.md)
+- [`docs/legal/privacy-policy.md`](docs/legal/privacy-policy.md)
+
+---
+
+**GitHub repository name (suggested slug):** `Aluf-Messenger` or `aluf-messenger` (spaces are not allowed in repository names; use the display name **Aluf Messenger** in the repository description.)
+
+This folder is intended as its **own** Git repository. It remains listed in the parent monorepo’s `.gitignore` so private development history stays separate.
+
+*This publication is intentionally limited to product behavior and reviewable code; it does not expose operator infrastructure.*
+
+*Русский: [README.md](README.md)*

@@ -1,30 +1,32 @@
-# Security Policy
+# Политика безопасности
 
-## Supported versions
+## Поддерживаемые версии
 
-Security updates are applied to the maintained release line of Aluf Messenger as determined by the project maintainers. Exact versioning is communicated through release notes when applicable.
+Обновления безопасности распространяются на актуальную линейку релизов Aluf Messenger по решению сопровождающих проекта. Конкретные номера версий при необходимости указываются в примечаниях к релизам.
 
-## Reporting a vulnerability
+## Сообщение об уязвимости
 
-**Please do not** file public GitHub issues for undisclosed security vulnerabilities.
+**Пожалуйста, не** создавайте публичные issues на GitHub для ещё не раскрытых уязвимостей.
 
-Instead, report details privately:
+Сообщайте детали в закрытом порядке:
 
-1. Use **GitHub Security Advisories** for this repository (*Security* → *Report a vulnerability*), **or**
-2. Email the maintainers at the security contact published on the official project or product website, if one is listed there.
+1. Через **GitHub Security Advisories** для этого репозитория (*Security* → *Report a vulnerability*), **или**
+2. По электронной почте на контакт безопасности, указанный на официальном сайте продукта или проекта, если такой контакт опубликован.
 
-Include:
+В сообщении укажите:
 
-- Description of the issue and potential impact
-- Steps to reproduce (proof-of-concept if possible)
-- Affected components or paths in this repository (files, services)
+- Описание проблемы и возможное влияние
+- Шаги воспроизведения (в идеале — proof-of-concept)
+- Затронутые компоненты или пути в репозитории (файлы, сервисы)
 
-We aim to acknowledge receipt in a reasonable timeframe and work with you on a coordinated disclosure before any public discussion.
+Мы стремимся подтвердить получение в разумный срок и согласовать ответственное раскрытие до публичного обсуждения.
 
-## Scope
+## Область применимости
 
-Reports should relate to **this codebase** (e.g. authentication, authorization, cryptography usage, injection, unsafe deserialization). Operational incidents (hosting, DNS, third-party outages) may be out of scope for this repository’s issue tracker.
+Сообщения должны относиться к **этому коду** (например: аутентификация, авторизация, криптография, инъекции, небезопасная десериализация). Операционные инциденты (хостинг, DNS, падения сторонних сервисов) могут быть вне области этого репозитория.
 
-## Safe harbor
+## Безопасный гавань (safe harbor)
 
-If you make a good-faith effort to comply with this policy and avoid privacy violations, data destruction, or service disruption, we will not pursue legal action against you for research related to this policy.
+Если вы добросовестно соблюдаете эту политику и не нарушаете конфиденциальность, не уничтожаете данные и не нарушаете работу сервисов, мы не будем предъявлять юридические претензии за исследования в рамках этой политики.
+
+*English: [SECURITY.md.en](SECURITY.md.en)*

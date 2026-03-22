@@ -1,65 +1,69 @@
-# Aluf Messenger
+# Алуф (Aluf Messenger)
 
-**Messaging without borders. Privacy without compromise.**
+**Общение без границ. Приватность без компромиссов.**
 
-Aluf Messenger is a modern, fast messenger with **secret chats**, **rich media**, **voice and video calls**, **bots**, **Mini-Apps**, and a **cross-platform** experience (web, mobile, desktop).
+Aluf Messenger — современный быстрый мессенджер с **секретными чатами**, **медиа**, **голосовыми и видеозвонками**, **ботами**, **Mini-Apps** и **кроссплатформенными** клиентами (веб, мобильные, десктоп).
 
-This repository publishes **source code for transparency and independent review**. It is **not** an operations manual: hosting layout, build pipelines, and deployment procedures for any production environment are **not** documented here.
+В этом репозитории опубликован **исходный код для прозрачности и независимой проверки**. Это **не** руководство по эксплуатации: схема хостинга, пайплайны сборки и процедуры деплоя в продакшене **не** документируются здесь.
 
-## What you will find here
+## Что здесь есть
 
-- **Clients and services** that implement the product’s behavior.
-- **High-level architecture** diagrams and security-oriented documentation under [`docs/`](docs/).
-- **OpenAPI** descriptions of HTTP surfaces where they help understand functionality ([`docs/api/`](docs/api/)).
-- **Protocol buffers** for service boundaries ([`packages/proto/`](packages/proto/)).
+- **Клиенты и сервисы**, реализующие поведение продукта.
+- **Обзорная архитектура** и документация по безопасности в каталоге [`docs/`](docs/).
+- Описания **OpenAPI** для HTTP-интерфейсов, где это помогает понять функциональность ([`docs/api/`](docs/api/)).
+- **Protocol Buffers** для границ сервисов ([`packages/proto/`](packages/proto/)).
 
-## Product capabilities (summary)
+## Возможности продукта (кратко)
 
-| Area | Highlights |
-|------|------------|
-| Messaging | Direct chats, groups, channels; read receipts; typing indicators |
-| Privacy | End-to-end encryption for secret chats (Signal-style ratchet); TLS for transport |
-| Media | Photos, documents, voice messages; media handling in dedicated services |
-| Calls | WebRTC-based 1:1 voice and video (see [`docs/calls-webrtc.md`](docs/calls-webrtc.md)) |
-| Platform | Bots and Mini-Apps; searchable music and extensibility hooks described in `docs/` |
-| Clients | Web, Flutter mobile, Tauri desktop (sources under `apps/` and related packages) |
+| Область | Основное |
+|---------|----------|
+| Сообщения | Личные чаты, группы, каналы; статусы прочтения; индикатор набора |
+| Приватность | Сквозное шифрование для секретных чатов (модель в духе Signal); TLS для транспорта |
+| Медиа | Фото, документы, голосовые; отдельные сервисы для медиа |
+| Звонки | Голос и видео 1:1 по WebRTC (см. [`docs/calls-webrtc.md`](docs/calls-webrtc.md)) |
+| Платформа | Боты и Mini-Apps; музыка и расширяемость — в `docs/` |
+| Клиенты | Web, Flutter, Tauri (исходники в `apps/` и связанных пакетах) |
 
-## Security
+## Безопасность
 
-If you believe you have found a **security vulnerability**, please follow [`SECURITY.md`](SECURITY.md). Do **not** open a public issue for undisclosed security bugs.
+Если вы считаете, что нашли **уязвимость безопасности**, следуйте [`SECURITY.md`](SECURITY.md). **Не** создавайте публичный issue для ещё не раскрытых проблем.
 
-## Continuous integration
+## Непрерывная интеграция
 
-GitHub Actions run on pushes and pull requests to `main` / `master`:
+GitHub Actions запускаются при push и pull request в ветки `main` / `master`:
 
-| Workflow | Purpose |
-|----------|---------|
-| [CI](.github/Skalettson/AlufMessenger/workflows/ci.yml) | Install dependencies, generate gRPC code, **lint**, **test**, **build** (with Postgres, Redis, NATS, MinIO service containers) |
-| [Secret scan](.github/Skalettson/AlufMessenger/workflows/gitleaks.yml) | [Gitleaks](https://github.com/Skalettson/AlufMessenger/gitleaks/gitleaks) on full history |
-| [Dependency audit](.github/Skalettson/AlufMessenger/workflows/audit.yml) | `pnpm audit` (high/critical; does not fail the default branch if vendors lag) |
+| Workflow | Назначение |
+|----------|------------|
+| [CI](.github/workflows/ci.yml) | Установка зависимостей, **lint**, **test**, **build** (контейнеры Postgres, Redis, NATS, MinIO) |
+| [Gitleaks](.github/workflows/gitleaks.yml) | [Gitleaks](https://github.com/gitleaks/gitleaks) по всей истории коммитов |
+| [Аудит зависимостей](.github/workflows/audit.yml) | `pnpm audit` (high/critical; ветка по умолчанию не падает, если отстают вендоры) |
 
-### First-time push (this tree is a separate clone from the private monorepo)
+### Первый push (это дерево — отдельный клон от приватного монорепозитория)
 
 ```bash
 cd messenger-src
-git remote add origin https://github.com/Skalettson/AlufMessenger.git
+git remote add origin https://github.com/OWNER/REPO.git
 git branch -M main
 git push -u origin main
 ```
 
-## License
+Подставьте `OWNER` и `REPO` под ваш репозиторий на GitHub.
 
-See [`LICENSE`](LICENSE).
+## Лицензия
 
-## Legal
+См. [`LICENSE`](LICENSE).
+
+## Правовые документы
 
 - [`docs/legal/terms-of-service.md`](docs/legal/terms-of-service.md)
 - [`docs/legal/privacy-policy.md`](docs/legal/privacy-policy.md)
 
 ---
 
-**GitHub repository name (suggested slug):** `Aluf-Messenger` or `aluf-messenger` (spaces are not allowed in repository names; use the display name **Aluf Messenger** in the repository description.)
+**Имя репозитория на GitHub (типичный slug):** `Aluf-Messenger` или `aluf-messenger` (пробелы в имени репозитория недопустимы; отображаемое имя **Aluf Messenger** можно указать в описании).
 
-This folder is intended as its **own** Git repository. It remains listed in the parent monorepo’s `.gitignore` so private development history stays separate.
+Этот каталог рассчитан на **отдельный** Git-репозиторий. Он внесён в `.gitignore` родительского монорепозитория, чтобы не смешивать историю с приватной разработкой.
 
-*This publication is intentionally limited to product behavior and reviewable code; it does not expose operator infrastructure.*
+*Публикация намеренно ограничена функциональностью и проверяемым кодом; инфраструктура оператора не раскрывается.*
+
+*English: [README.md.en](README.md.en)*

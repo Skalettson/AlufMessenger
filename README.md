@@ -34,21 +34,21 @@ GitHub Actions run on pushes and pull requests to `main` / `master`:
 
 | Workflow | Purpose |
 |----------|---------|
-| [CI](.github/workflows/ci.yml) | Install dependencies, generate gRPC code, **lint**, **test**, **build** (with Postgres, Redis, NATS, MinIO service containers) |
-| [Secret scan](.github/workflows/gitleaks.yml) | [Gitleaks](https://github.com/gitleaks/gitleaks) on full history |
-| [Dependency audit](.github/workflows/audit.yml) | `pnpm audit` (high/critical; does not fail the default branch if vendors lag) |
+| [CI](.github/Skalettson/AlufMessenger/workflows/ci.yml) | Install dependencies, generate gRPC code, **lint**, **test**, **build** (with Postgres, Redis, NATS, MinIO service containers) |
+| [Secret scan](.github/Skalettson/AlufMessenger/workflows/gitleaks.yml) | [Gitleaks](https://github.com/Skalettson/AlufMessenger/gitleaks/gitleaks) on full history |
+| [Dependency audit](.github/Skalettson/AlufMessenger/workflows/audit.yml) | `pnpm audit` (high/critical; does not fail the default branch if vendors lag) |
 
 Replace `OWNER` and `REPO` after you create the GitHub repository:
 
 ```markdown
-[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
+[![CI](https://github.com/Skalettson/AlufMessenger/actions/workflows/ci.yml/badge.svg)](https://github.com/Skalettson/AlufMessenger/actions/workflows/ci.yml)
 ```
 
 ### First-time push (this tree is a separate clone from the private monorepo)
 
 ```bash
 cd messenger-src
-git remote add origin https://github.com/OWNER/REPO.git
+git remote add origin https://github.com/Skalettson/AlufMessenger.git
 git branch -M main
 git push -u origin main
 ```
